@@ -1,0 +1,146 @@
+{
+  "cli": {
+    "version": ">= 16.9.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "base": {
+      "node": "18.18.0",
+      "yarn": "1.22.19",
+      "env": {
+        "SENTRY_DSN": "123456789"
+      },
+      "cache": {
+        "disabled": false,
+        "key": "v1-cache",
+        "paths": ["node_modules", ".expo"]
+      }
+    },
+    "development": {
+      "extends": "base",
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_APP_ENV": "development",
+        "EXPO_PUBLIC_API_URL": "https://dev.local",
+        "SENTRY_DSN": "123456789"
+      },
+      "android": {
+        "distribution": "internal",
+        "withoutCredentials": true,
+        "buildType": "apk",
+        "resourceClass": "default"
+      },
+      "ios": {
+        "simulator": false,
+        "distribution": "internal",
+        "resourceClass": "default"
+      }
+    },
+    "development-simulator": {
+      "extends": "development",
+      "ios": {
+        "simulator": true,
+        "distribution": "internal"
+      }
+    },
+    "staging": {
+      "extends": "base",
+      "distribution": "internal",
+      "channel": "staging",
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_APP_ENV": "staging",
+        "EXPO_PUBLIC_API_URL": "https://staging.local",
+        "SENTRY_DSN": "123456789"
+      },
+      "android": {
+        "buildType": "apk",
+        "resourceClass": "default"
+      },
+      "ios": {
+        "resourceClass": "default"
+      }
+    },
+    "qa": {
+      "extends": "base",
+      "distribution": "internal",
+      "channel": "qa",
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_APP_ENV": "qa",
+        "EXPO_PUBLIC_API_URL": "https://qa.local",
+        "SENTRY_DSN": "123456789"
+      },
+      "android": {
+        "buildType": "apk",
+        "resourceClass": "medium"
+      },
+      "ios": {
+        "resourceClass": "medium"
+      }
+    },
+    "production": {
+      "extends": "base",
+      "autoIncrement": true,
+      "distribution": "store",
+      "channel": "production",
+      "env": {
+        "EXPO_PUBLIC_APP_ENV": "production",
+        "EXPO_PUBLIC_API_URL": "https://api.myapp.com",
+        "SENTRY_DSN": "123456789"
+      },
+      "android": {
+        "buildType": "apk",
+        "resourceClass": "medium"
+      },
+      "ios": {
+        "resourceClass": "medium"
+      }
+    },
+    "production-android": {
+      "extends": "production",
+      "android": {
+        "resourceClass": "large",
+        "gradleCommand": ":app:bundleRelease"
+      }
+    },
+    "production-ios": {
+      "extends": "production",
+      "ios": {
+        "resourceClass": "large",
+        "scheme": "YourApp",
+        "buildConfiguration": "Release"
+      }
+    }
+  },
+  "submit": {
+    "staging": {
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "internal",
+        "releaseStatus": "completed"
+      },
+      "ios": {
+        "appleId": "your-apple-id@yourcompany.com",
+        "ascAppId": "1234567890",
+        "appleTeamId": "ABC123DEF4"
+      }
+    },
+    "production": {
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "production",
+        "releaseStatus": "draft",
+        "changesNotSentForReview": true
+      },
+      "ios": {
+        "appleId": "your-apple-id@yourcompany.com",
+        "ascAppId": "1234567890",
+        "appleTeamId": "ABC123DEF4",
+        "companyName": "Your Company Name",
+        "language": "en-US"
+      }
+    }
+  }
+}
