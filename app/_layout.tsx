@@ -18,7 +18,6 @@ export default function RootLayout() {
         <ColorProvider>
           <StatusBar
             style={selectedTheme === COLOR_THEME.DARK ? 'light' : 'dark'}
-            translucent
           />
           <Stack screenOptions={{ headerShown: false }} />
         </ColorProvider>

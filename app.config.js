@@ -3,24 +3,24 @@ module.exports = ({ config }) => {
 
   const envSpecificConfig = {
     development: {
-      name: 'YourApp Dev',
-      bundleIdentifier: 'com.yourcompany.yourapp.dev',
-      scheme: 'yourapp-dev',
+      name: 'TAPT Dev',
+      bundleIdentifier: 'com.tapt.mobile.dev',
+      scheme: 'tapt-dev',
     },
     staging: {
-      name: 'YourApp Staging',
-      bundleIdentifier: 'com.yourcompany.yourapp.staging',
-      scheme: 'yourapp-staging',
+      name: 'TAPT Staging',
+      bundleIdentifier: 'com.tapt.mobile.staging',
+      scheme: 'tapt-staging',
     },
     qa: {
-      name: 'YourApp QA',
-      bundleIdentifier: 'com.yourcompany.yourapp.qa',
-      scheme: 'yourapp-qa',
+      name: 'TAPT QA',
+      bundleIdentifier: 'com.tapt.mobile.qa',
+      scheme: 'tapt-qa',
     },
     production: {
-      name: 'YourApp',
-      bundleIdentifier: 'com.yourcompany.yourapp',
-      scheme: 'yourapp',
+      name: 'TAPT',
+      bundleIdentifier: 'com.tapt.mobile',
+      scheme: 'tapt',
     },
   };
 
@@ -41,13 +41,12 @@ module.exports = ({ config }) => {
   return {
     ...config,
     name: envConfig.name,
-    slug: 'expo-starter-template',
+    slug: 'tapt-mobile',
     version: '1.0.0',
     orientation: 'portrait',
     icon: './assets/icon.png',
     scheme: envConfig.scheme,
     userInterfaceStyle: 'light',
-    newArchEnabled: true,
     splash: {
       image: './assets/splash-icon.png',
       resizeMode: 'contain',
@@ -71,18 +70,18 @@ module.exports = ({ config }) => {
     web: {
       favicon: './assets/favicon.png',
     },
-    plugins: ['expo-router'],
+    plugins: ['expo-router', '@sentry/react-native', 'expo-localization', 'expo-status-bar'],
     extra: {
       eas: {
-        projectId: 'eee45be2-c7fb-40c0-8e3a-a938d605b6fd',
+        projectId: '',
       },
     },
     updates: {
-      url: 'https://u.expo.dev/eee45be2-c7fb-40c0-8e3a-a938d605b6fd',
+      url: '',
     },
     runtimeVersion: {
       policy: 'appVersion',
     },
-    owner: 'vezzo',
+    owner: '',
   };
 };

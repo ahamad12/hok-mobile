@@ -5,10 +5,10 @@
   },
   "build": {
     "base": {
-      "node": "18.18.0",
-      "yarn": "1.22.19",
+      "node": "22.13.1",
+      "yarn": "4.9.1",
       "env": {
-        "SENTRY_DSN": "123456789"
+        "SENTRY_DSN": ""
       },
       "cache": {
         "disabled": false,
@@ -23,7 +23,7 @@
       "env": {
         "EXPO_PUBLIC_APP_ENV": "development",
         "EXPO_PUBLIC_API_URL": "https://dev.local",
-        "SENTRY_DSN": "123456789"
+        "SENTRY_DSN": ""
       },
       "android": {
         "distribution": "internal",
@@ -52,7 +52,7 @@
       "env": {
         "EXPO_PUBLIC_APP_ENV": "staging",
         "EXPO_PUBLIC_API_URL": "https://staging.local",
-        "SENTRY_DSN": "123456789"
+        "SENTRY_DSN": ""
       },
       "android": {
         "buildType": "apk",
@@ -70,7 +70,7 @@
       "env": {
         "EXPO_PUBLIC_APP_ENV": "qa",
         "EXPO_PUBLIC_API_URL": "https://qa.local",
-        "SENTRY_DSN": "123456789"
+        "SENTRY_DSN": ""
       },
       "android": {
         "buildType": "apk",
@@ -87,8 +87,8 @@
       "channel": "production",
       "env": {
         "EXPO_PUBLIC_APP_ENV": "production",
-        "EXPO_PUBLIC_API_URL": "https://api.myapp.com",
-        "SENTRY_DSN": "123456789"
+        "EXPO_PUBLIC_API_URL": "",
+        "SENTRY_DSN": ""
       },
       "android": {
         "buildType": "apk",
@@ -109,7 +109,7 @@
       "extends": "production",
       "ios": {
         "resourceClass": "large",
-        "scheme": "YourApp",
+        "scheme": "tapt",
         "buildConfiguration": "Release"
       }
     }
@@ -117,28 +117,28 @@
   "submit": {
     "staging": {
       "android": {
-        "serviceAccountKeyPath": "./google-service-account.json",
+        "serviceAccountKeyPath": "",
         "track": "internal",
         "releaseStatus": "completed"
       },
       "ios": {
-        "appleId": "your-apple-id@yourcompany.com",
-        "ascAppId": "1234567890",
-        "appleTeamId": "ABC123DEF4"
+        "appleId": "",
+        "ascAppId": "",
+        "appleTeamId": ""
       }
     },
     "production": {
       "android": {
-        "serviceAccountKeyPath": "./google-service-account.json",
+        "serviceAccountKeyPath": "",
         "track": "production",
         "releaseStatus": "draft",
         "changesNotSentForReview": true
       },
       "ios": {
-        "appleId": "your-apple-id@yourcompany.com",
-        "ascAppId": "1234567890",
-        "appleTeamId": "ABC123DEF4",
-        "companyName": "Your Company Name",
+        "appleId": "",
+        "ascAppId": "",
+        "appleTeamId": "",
+        "companyName": "",
         "language": "en-US"
       }
     }

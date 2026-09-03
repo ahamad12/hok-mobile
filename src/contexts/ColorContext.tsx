@@ -28,8 +28,8 @@ type ColorProviderProps = {
 
 export const ColorProvider = ({ children }: ColorProviderProps) => {
   const selectedTheme = useSelectedTheme();
-  const [systemTheme, setSystemTheme] = useState<ColorSchemeName>(
-    Appearance.getColorScheme(),
+  const [systemTheme, setSystemTheme] = useState<ColorSchemeName | null>(
+    Appearance.getColorScheme() ?? null,
   );
 
   useEffect(() => {
