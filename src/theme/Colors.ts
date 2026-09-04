@@ -188,6 +188,7 @@ export const palette = {
 export type Brand = {
   primary: string;
   secondary: string;
+  accent: string;
 };
 
 export type Text = {
@@ -211,6 +212,8 @@ export type Background = {
   inverse: string;
   disabled: string;
   active: string;
+  subtle: string;
+  surface: string;
   success: string;
   successSubtle: string;
   error: string;
@@ -253,6 +256,21 @@ export type Button = {
     pressed: string;
     disabled: string;
   };
+  destructive: {
+    default: string;
+    pressed: string;
+    disabled: string;
+  };
+  success: {
+    default: string;
+    pressed: string;
+    disabled: string;
+  };
+  warning: {
+    default: string;
+    pressed: string;
+    disabled: string;
+  };
 };
 
 export type Icon = {
@@ -291,6 +309,7 @@ export const LightColors: ColorPallete = {
   brand: {
     primary: palette.charcoal[700],
     secondary: palette.charcoal[500],
+    accent: palette.charcoal[400],
   },
 
   text: {
@@ -314,6 +333,8 @@ export const LightColors: ColorPallete = {
     inverse: palette.charcoal[900],
     disabled: palette.gray[100],
     active: palette.white[50],
+    subtle: palette.gray[100],
+    surface: palette.white[50],
     success: palette.green[500],
     successSubtle: palette.green[50],
     error: palette.red[500],
@@ -356,6 +377,21 @@ export const LightColors: ColorPallete = {
       pressed: palette.gray[100],
       disabled: palette.white[50],
     },
+    destructive: {
+      default: palette.red[600],
+      pressed: palette.red[700],
+      disabled: palette.gray[300],
+    },
+    success: {
+      default: palette.green[600],
+      pressed: palette.green[700],
+      disabled: palette.gray[300],
+    },
+    warning: {
+      default: palette.yellow[600],
+      pressed: palette.yellow[700],
+      disabled: palette.gray[300],
+    },
   },
 
   icon: {
@@ -385,6 +421,7 @@ export const DarkColors: ColorPallete = {
   brand: {
     primary: palette.charcoal[400],
     secondary: palette.charcoal[300],
+    accent: palette.charcoal[500],
   },
 
   text: {
@@ -408,6 +445,8 @@ export const DarkColors: ColorPallete = {
     inverse: palette.white[50],
     disabled: palette.charcoal[850],
     active: palette.charcoal[900],
+    subtle: palette.charcoal[800],
+    surface: palette.charcoal[850],
     success: palette.green[800],
     successSubtle: palette.green[900],
     error: palette.red[800],
@@ -449,6 +488,21 @@ export const DarkColors: ColorPallete = {
       default: palette.charcoal[900],
       pressed: palette.charcoal[850],
       disabled: palette.charcoal[900],
+    },
+    destructive: {
+      default: palette.red[600],
+      pressed: palette.red[700],
+      disabled: palette.charcoal[700],
+    },
+    success: {
+      default: palette.green[600],
+      pressed: palette.green[700],
+      disabled: palette.charcoal[700],
+    },
+    warning: {
+      default: palette.yellow[600],
+      pressed: palette.yellow[700],
+      disabled: palette.charcoal[700],
     },
   },
 

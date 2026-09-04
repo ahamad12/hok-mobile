@@ -12,3 +12,4 @@ export * from './Column';
 export * from './Divider';
 export * from './Row';
 export * from './ThemedView';
+export * from './ThemeToggle';
