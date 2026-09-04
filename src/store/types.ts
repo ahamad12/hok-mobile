@@ -1,5 +1,6 @@
 import { AppSlice } from './slices/appSlice';
+import { ToastSlice } from './slices/toastSlice';
 import { TranslationSlice } from './slices/translationSlice';
 
 // Combine all slice types
-export type StoreState = AppSlice & TranslationSlice;
+export type StoreState = AppSlice & TranslationSlice & ToastSlice;
