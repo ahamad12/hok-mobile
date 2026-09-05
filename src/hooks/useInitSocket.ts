@@ -1,9 +1,8 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect } from "react";
 
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
-
 import { socketService } from "@/services/socket/socket.service";
+import { TokenStorage } from "@/services/TokenStorage";
 
 /**
  * Single call at app root. Wires:
@@ -18,7 +17,7 @@ export function useInitSocket() {
   useNetworkStatus();
 
   useEffect(() => {
-    socketService.setTokenProvider(() => AsyncStorage.getItem("token"));
+    socketService.setTokenProvider(() => TokenStorage.getAccessToken());
 
     return () => {
       socketService.disconnect();
