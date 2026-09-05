@@ -8,11 +8,15 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AppToast } from '@/components/AppToast';
 import { COLOR_THEME } from '@/constants';
 import { ColorProvider } from '@/contexts/ColorContext';
+import { useInitSocket } from '@/hooks/useInitSocket';
+import { useSocketConnection } from '@/hooks/useSocketConnection';
 import { QueryClientProvider } from '@/providers/QueryClientProvider';
 import { useSelectedTheme } from '@/store/selectors/appSelectors';
 
 export default function RootLayout() {
   const selectedTheme = useSelectedTheme();
+  useInitSocket();
+  useSocketConnection();
 
   return (
     <GestureHandlerRootView style={styles.container}>

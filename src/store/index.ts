@@ -10,6 +10,7 @@ import {
 import i18n from '@/i18n';
 
 import { createAppSlice } from './slices/appSlice';
+import { createSocketSlice } from './slices/socketSlice';
 import { createToastSlice } from './slices/toastSlice';
 import { createTranslationSlice } from './slices/translationSlice';
 import { StoreState } from './types';
@@ -23,6 +24,7 @@ const useStore = create<StoreState>()(
         ...createAppSlice(...a),
         ...createTranslationSlice(...a),
         ...createToastSlice(...a),
+        ...createSocketSlice(...a),
       }),
       {
         name: 'app-storage',
