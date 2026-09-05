@@ -5,7 +5,9 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { AppErrorBoundary } from '@/components/AppErrorBoundary';
 import { AppToast } from '@/components/AppToast';
+import { captureError } from '@/config/SentrySetup';
 import { COLOR_THEME } from '@/constants';
 import { ColorProvider } from '@/contexts/ColorContext';
 import { useInitSocket } from '@/hooks/useInitSocket';
@@ -26,8 +28,10 @@ export default function RootLayout() {
             <StatusBar
               style={selectedTheme === COLOR_THEME.DARK ? 'light' : 'dark'}
             />
-            <Stack screenOptions={{ headerShown: false }} />
-            <AppToast />
+            <AppErrorBoundary onError={(e) => captureError(e)}>
+              <Stack screenOptions={{ headerShown: false }} />
+              <AppToast />
+            </AppErrorBoundary>
           </BottomSheetModalProvider>
         </ColorProvider>
       </QueryClientProvider>

@@ -36,19 +36,14 @@ API.interceptors.response.use(
   },
   (error) => {
     if (axios.isCancel(error)) {
-      return Promise.reject(new Error('Request was cancelled.'));
-    }
-
-    if (error.code === 'ERR_NETWORK' || !error.response) {
       debouncedNoInternetHandler(NetworkStatus.OFFLINE);
-      return Promise.reject(
-        new Error(
-          'Network error: Unable to reach the server. Please check your internet connection.',
-        ),
-      );
     }
-
-    return Promise.reject(new Error('An unknown error occurred.'));
+    if (error.code === 'ERR_NETWORK') {
+      debouncedNoInternetHandler(NetworkStatus.OFFLINE);
+    }
+    // Always re-reject the ORIGINAL error — status, response.data, code all
+    // stay intact so ApiErrors.ts can actually read the backend's error body.
+    return Promise.reject(error);
   },
 );
 
