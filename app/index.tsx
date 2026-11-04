@@ -1,6 +1,28 @@
 import { Redirect } from 'expo-router';
 import React from 'react';
+import { ActivityIndicator } from 'react-native';
+
+import { AppText } from '@/components/AppText';
+import { AppView } from '@/components/AppView';
+import { useColors } from '@/contexts/ColorContext';
+import { useAuthStatus } from '@/features/auth/hooks/useAuth';
 
 export default function Index() {
-  return <Redirect href='/example' />;
+  const status = useAuthStatus();
+  const { colors } = useColors();
+
+  if (status === 'restoring') {
+    return (
+      <AppView flex={1} align='center' justify='center' bg='default' gap={4}>
+        <ActivityIndicator color={colors.brand.primary} />
+        <AppText color='secondary'>Restoring session…</AppText>
+      </AppView>
+    );
+  }
+
+  if (status === 'signedOut') {
+    return <Redirect href='/(auth)/login' />;
+  }
+
+  return <Redirect href='/(tabs)' />;
 }

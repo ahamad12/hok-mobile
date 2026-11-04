@@ -10,6 +10,7 @@ import { AppToast } from '@/components/AppToast';
 import { captureError } from '@/config/SentrySetup';
 import { COLOR_THEME } from '@/constants';
 import { ColorProvider } from '@/contexts/ColorContext';
+import { useInitAuth } from '@/features/auth/hooks/useInitAuth';
 import { useInitSocket } from '@/hooks/useInitSocket';
 import { useSocketConnection } from '@/hooks/useSocketConnection';
 import { QueryClientProvider } from '@/providers/QueryClientProvider';
@@ -17,6 +18,7 @@ import { useSelectedTheme } from '@/store/selectors/appSelectors';
 
 export default function RootLayout() {
   const selectedTheme = useSelectedTheme();
+  useInitAuth();
   useInitSocket();
   useSocketConnection();
 
