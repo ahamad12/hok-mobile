@@ -22,8 +22,3 @@ export enum NetworkStatus {
   OFFLINE = 'offline',
 }
 
-export const ROUTES = {
-  MODALS: {
-    EXAMPLE: '/(modals)/exampleModal',
-  },
-};
