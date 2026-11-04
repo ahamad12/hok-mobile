@@ -6,17 +6,18 @@ import { useStore } from '@/store';
 // Get the store instance outside of the debounce
 const store = useStore;
 
-// Create a debounced function to update network status
+// Create a debounced function to update network status.
+// 1s trailing debounce: collapses NetInfo flaps without delaying the offline
+// banner (the previous config paired a 3s wait with maxWait: 1000, which is
+// contradictory — lodash clamps to maxWait, so the 3s never took effect).
 const debouncedSetNetworkStatus = debounce(
   (status: NetworkStatus) => {
     store.getState().setNetworkStatus(status);
   },
-  // Debounce for 3 seconds
-  3000,
+  1000,
   {
     leading: false,
     trailing: true,
-    maxWait: 1000,
   },
 );
 

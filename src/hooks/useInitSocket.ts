@@ -1,8 +1,10 @@
-import { useEffect } from "react";
+import { useEffect } from 'react';
 
-import { useNetworkStatus } from "@/hooks/useNetworkStatus";
-import { socketService } from "@/services/socket/socket.service";
-import { TokenStorage } from "@/services/TokenStorage";
+import { useAuthStore } from '@/features/auth/store/auth.store';
+import { useNetworkStatus } from '@/hooks/useNetworkStatus';
+import { registerTokenRefreshHandler } from '@/services/httpClient';
+import { socketService } from '@/services/socket/socket.service';
+import { TokenStorage } from '@/services/TokenStorage';
 
 /**
  * Single call at app root. Wires:
@@ -18,8 +20,16 @@ export function useInitSocket() {
 
   useEffect(() => {
     socketService.setTokenProvider(() => TokenStorage.getAccessToken());
+    socketService.setSignedInProvider(
+      () => useAuthStore.getState().status === 'signedIn',
+    );
+    registerTokenRefreshHandler(() => {
+      socketService.reconnect();
+    });
 
     return () => {
+      registerTokenRefreshHandler(null);
+      socketService.setSignedInProvider(null);
       socketService.disconnect();
     };
   }, []);

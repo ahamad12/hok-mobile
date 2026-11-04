@@ -18,11 +18,15 @@ export type ApiResponse<T> = ApiSuccess<T> | ApiErrorData;
  */
 export type Paginated<K extends string, T> = Record<K, T[]> & { total: number };
 
-export function isApiSuccess<T>(body: ApiResponse<T> | unknown): body is ApiSuccess<T> {
+export function isApiSuccess<T>(
+  body: ApiResponse<T> | unknown,
+): body is ApiSuccess<T> {
   return (body as ApiResponse<T>)?.success === true;
 }
 
-export function isApiError<T>(body: ApiResponse<T> | unknown): body is ApiErrorData {
+export function isApiError<T>(
+  body: ApiResponse<T> | unknown,
+): body is ApiErrorData {
   return (body as ApiResponse<T>)?.success === false;
 }
 
@@ -48,7 +52,17 @@ export function unwrap<T>(response: AxiosResponse<ApiResponse<T>>): T {
     );
   }
 
-  return (body as ApiSuccess<T>).data;
+  if (!isApiSuccess(body)) {
+    throw new AxiosError(
+      'Malformed success response: missing `success`/`data` envelope',
+      'UNKNOWN_ERROR',
+      response.config,
+      response.request,
+      response,
+    );
+  }
+
+  return body.data;
 }
 
 /** Same as unwrap, but for the { <resourceKey>: T[]; total } list shape. */

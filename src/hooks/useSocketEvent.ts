@@ -1,12 +1,11 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react';
 
-import { useStore } from "@/store";
-
-import { socketService } from "@/services/socket/socket.service";
-import type {
+import { socketService } from '@/services/socket/socket.service';
+import {
   ServerToClientEvents,
   SocketEnvelope,
-} from "@/services/socket/socket.types";
+} from '@/services/socket/socket.types';
+import { useStore } from '@/store';
 
 type EnvelopeOf<TEvent extends keyof ServerToClientEvents> = Parameters<
   ServerToClientEvents[TEvent]
@@ -23,7 +22,7 @@ export function useSocketEvent<TEvent extends keyof ServerToClientEvents>(
 
   useEffect(() => {
     const socket = socketService.getSocket();
-    if (!socket) return;
+    if (!socket) return undefined;
 
     // socket.io's on() types the listener via FallbackToUntypedListener, which
     // degrades to a deferred conditional when Ev is a generic type variable —
