@@ -1,6 +1,6 @@
 /**
  * Canonical endpoint map for tapt-mobile.
- * Derived from tapt-api/packages/api/src/contracts/* (pathPrefix "/api/v1" stripped — baseURL already contains it).
+ * Derived from tapt-api/packages/api/src/contracts/* (pathPrefix "/api/v1" stripped — API_BASE_URL already contains it).
  * Only routes that actually exist in the API are listed. Do not add invented AUTH/COMPANIES/UPLOADS entries.
  */
 export const ENDPOINTS = {
@@ -10,8 +10,17 @@ export const ENDPOINTS = {
     REFRESH: 'auth/refresh',
     LOGOUT: 'auth/logout',
     PROFILE: 'auth/profile',
-    UPDATE_PROFILE: 'auth/profile',
     CHANGE_PASSWORD: 'auth/change-password',
+    LOGOUT_ALL: 'auth/logout-all',
+    SESSIONS: 'auth/sessions',
+    SESSION: (id: string) => `auth/sessions/${id}`,
+  },
+  INVITATIONS: {
+    CREATE: 'invitations',
+    LIST: 'invitations',
+    ACCEPT: 'invitations/accept',
+    RESEND: (id: string) => `invitations/${id}/resend`,
+    REVOKE: (id: string) => `invitations/${id}`,
   },
   SHOPS: {
     CREATE: 'shops',
@@ -21,7 +30,8 @@ export const ENDPOINTS = {
     DELETE: (id: string) => `shops/${id}`,
     STAFF: (id: string) => `shops/${id}/staff`,
     ADD_STAFF: (id: string) => `shops/${id}/staff`,
-    REMOVE_STAFF: (shopId: string, userId: string) => `shops/${shopId}/staff/${userId}`,
+    REMOVE_STAFF: (shopId: string, userId: string) =>
+      `shops/${shopId}/staff/${userId}`,
   },
   CATEGORIES: {
     CREATE: 'categories',
@@ -41,13 +51,15 @@ export const ENDPOINTS = {
     SUPPLIER_OUTSTANDING: 'deliveries/supplier-outstanding',
     BY_ID: (id: string) => `deliveries/${id}`,
     RECORD_PAYMENT: (id: string) => `deliveries/${id}/payments`,
-    VOID_PAYMENT: (paymentId: string) => `deliveries/payments/${paymentId}/void`,
+    VOID_PAYMENT: (paymentId: string) =>
+      `deliveries/payments/${paymentId}/void`,
     VOID: (id: string) => `deliveries/${id}/void`,
   },
   DAILY_SUMMARIES: {
     CREATE: 'daily-summaries',
     LIST: 'daily-summaries',
-    BY_DATE: (shopId: string, date: string) => `daily-summaries/by-date/${shopId}/${date}`,
+    BY_DATE: (shopId: string, date: string) =>
+      `daily-summaries/by-date/${shopId}/${date}`,
     BY_ID: (id: string) => `daily-summaries/${id}`,
     FINALIZE: (id: string) => `daily-summaries/${id}/finalize`,
     VOID: (id: string) => `daily-summaries/${id}/void`,
@@ -78,7 +90,8 @@ export const ENDPOINTS = {
     UPDATE: (id: string) => `licenses/${id}`,
     RENEW: (id: string) => `licenses/${id}/renew`,
     RENEWALS: (id: string) => `licenses/${id}/renewals`,
-    VOID_RENEWAL: (id: string, renewalId: string) => `licenses/${id}/renewals/${renewalId}/void`,
+    VOID_RENEWAL: (id: string, renewalId: string) =>
+      `licenses/${id}/renewals/${renewalId}/void`,
   },
   PROFIT_REPORTS: {
     GENERATE: 'profit-reports/generate',

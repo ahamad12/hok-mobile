@@ -30,9 +30,13 @@ export type ServerErrorCode =
   | 'DATABASE_INIT_ERROR'
   | 'DATABASE_PANIC'
   | 'DATABASE_ERROR'
+  | 'UNAUTHORIZED'
   | 'BAD_REQUEST';
 
-export type ClientErrorCode = 'NETWORK_ERROR' | 'UNKNOWN_ERROR';
+export type ClientErrorCode =
+  | 'NETWORK_ERROR'
+  | 'SESSION_EXPIRED'
+  | 'UNKNOWN_ERROR';
 
 export type ApiErrorCode = ServerErrorCode | ClientErrorCode;
 
@@ -55,6 +59,9 @@ export const getErrorCode = (error: unknown): ApiErrorCode => {
     ) {
       return 'NETWORK_ERROR';
     }
+  }
+  if (error instanceof Error && error.name === 'SessionExpiredError') {
+    return 'SESSION_EXPIRED';
   }
   return 'UNKNOWN_ERROR';
 };
@@ -82,6 +89,29 @@ export const getApiErrorDetails = (
   return { code, message, details };
 };
 
+type FieldViolation = { field?: string; message?: string };
+
+/**
+ * Server validation errors keyed by form field. The API sends
+ * `details.violations` (ts-rest/zod, fields like "body.email") or a bare
+ * `[{ field, message }]` array (domain/form errors). First message wins.
+ */
+export const getFieldErrors = (error: unknown): Record<string, string> => {
+  const { details } = getApiErrorDetails(error);
+  const list: unknown = Array.isArray(details)
+    ? details
+    : (details as { violations?: unknown } | undefined)?.violations;
+  if (!Array.isArray(list)) return {};
+
+  const out: Record<string, string> = {};
+  for (const v of list as FieldViolation[]) {
+    if (!v?.field || !v.message) continue;
+    const field = v.field.replace(/^body\./, '');
+    out[field] ??= v.message;
+  }
+  return out;
+};
+
 const ERROR_MESSAGES: Record<ApiErrorCode, string> = {
   VALIDATION_ERROR: 'Please check your input and try again.',
   INVALID_INPUT: 'Please check your input and try again.',
@@ -98,8 +128,10 @@ const ERROR_MESSAGES: Record<ApiErrorCode, string> = {
   DATABASE_INIT_ERROR: 'Database unavailable. Please try again.',
   DATABASE_PANIC: 'Database error. Please try again.',
   DATABASE_ERROR: 'Database error. Please try again.',
+  UNAUTHORIZED: 'Your session has ended. Please sign in again.',
   BAD_REQUEST: 'Bad request. Please check your input.',
   NETWORK_ERROR: 'Network error. Please check your connection.',
+  SESSION_EXPIRED: 'Your session has ended. Please sign in again.',
   UNKNOWN_ERROR: 'An unexpected error occurred. Please try again.',
 };
 

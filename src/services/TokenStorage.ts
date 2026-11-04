@@ -23,10 +23,25 @@ export const TokenStorage = {
   },
 
   async setTokens(accessToken: string, refreshToken: string): Promise<void> {
-    await Promise.all([
-      SecureStore.setItemAsync(ACCESS_TOKEN_KEY, accessToken, SECURE_OPTS),
-      SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refreshToken, SECURE_OPTS),
-    ]);
+    // Sequential writes: a half-written pair (access without refresh) is
+    // worse than a failure — on partial failure delete both so the next
+    // boot sees a clean signed-out state instead of mismatched tokens.
+    try {
+      await SecureStore.setItemAsync(
+        ACCESS_TOKEN_KEY,
+        accessToken,
+        SECURE_OPTS,
+      );
+      await SecureStore.setItemAsync(
+        REFRESH_TOKEN_KEY,
+        refreshToken,
+        SECURE_OPTS,
+      );
+    } catch (error) {
+      await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
+      await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+      throw error;
+    }
   },
 
   async clearTokens(): Promise<void> {
@@ -38,8 +53,9 @@ export const TokenStorage = {
 
   /**
    * One-time backfill from the legacy AsyncStorage 'token' key into
-   * SecureStore. Legacy storage held an access token only — the refresh
-   * token backfills naturally on the next 401-triggered rotation.
+   * SecureStore. Legacy storage held an access token only — with no refresh
+   * token the next authed request fails refresh and force-signs-out, so a
+   * legacy-only device lands on login rather than silently rotating.
    * Call once at app startup (before the first authed request).
    */
   async migrateLegacyToken(): Promise<void> {
