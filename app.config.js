@@ -3,22 +3,22 @@ module.exports = ({ config }) => {
 
   const envSpecificConfig = {
     development: {
-      name: 'TAPT Dev',
+      name: 'Hok Dev',
       bundleIdentifier: 'com.tapt.mobile.dev',
       scheme: 'tapt-dev',
     },
     staging: {
-      name: 'TAPT Staging',
+      name: 'Hok Staging',
       bundleIdentifier: 'com.tapt.mobile.staging',
       scheme: 'tapt-staging',
     },
     qa: {
-      name: 'TAPT QA',
+      name: 'Hok QA',
       bundleIdentifier: 'com.tapt.mobile.qa',
       scheme: 'tapt-qa',
     },
     production: {
-      name: 'TAPT',
+      name: 'Hok',
       bundleIdentifier: 'com.tapt.mobile',
       scheme: 'tapt',
     },
@@ -46,11 +46,11 @@ module.exports = ({ config }) => {
     orientation: 'portrait',
     icon: './assets/icon.png',
     scheme: envConfig.scheme,
-    userInterfaceStyle: 'light',
+    userInterfaceStyle: 'automatic',
     splash: {
       image: './assets/splash-icon.png',
       resizeMode: 'contain',
-      backgroundColor: '#ffffff',
+      backgroundColor: '#121210',
     },
     ios: {
       supportsTablet: true,
@@ -62,7 +62,7 @@ module.exports = ({ config }) => {
     android: {
       adaptiveIcon: {
         foregroundImage: './assets/adaptive-icon.png',
-        backgroundColor: '#ffffff',
+        backgroundColor: '#121210',
       },
       edgeToEdgeEnabled: true,
       package: envConfig.bundleIdentifier,
