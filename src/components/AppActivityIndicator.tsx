@@ -50,10 +50,12 @@ export const AppActivityIndicator: React.FC<AppActivityIndicatorProps> = ({
 
   return (
     <View
-      style={[styles.container, { width: indicatorSize, height: indicatorSize }]}
+      style={[
+        styles.container,
+        { width: indicatorSize, height: indicatorSize },
+      ]}
       accessibilityRole='progressbar'
-      accessibilityLabel='Loading'
-    >
+      accessibilityLabel='Loading'>
       <Animated.View style={spinStyle}>
         <LinearGradient
           colors={[
@@ -68,8 +70,7 @@ export const AppActivityIndicator: React.FC<AppActivityIndicatorProps> = ({
             height: indicatorSize,
             borderRadius: indicatorSize / 2,
             padding: borderWidth,
-          }}
-        >
+          }}>
           <View
             style={{
               flex: 1,

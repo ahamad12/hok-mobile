@@ -32,6 +32,7 @@ import { borderRadius, spacing } from '@/theme/Common';
 import { sheetRegistry } from '@/utils/sheetRegistry';
 
 import { AppIcon } from './AppIcon';
+import { AppText } from './AppText';
 
 export interface AppBottomSheetRef {
   open: () => void;
@@ -43,12 +44,15 @@ export interface AppBottomSheetProps {
   children?: React.ReactNode;
   onClose?: () => void;
   style?: ViewStyle;
+  /** Optional heading rendered above the content. */
+  title?: string;
+  subtitle?: string;
 }
 
 export const AppBottomSheet = forwardRef<
   AppBottomSheetRef,
   AppBottomSheetProps
->(({ name, children, onClose, style }, ref) => {
+>(({ name, children, onClose, style, title, subtitle }, ref) => {
   const theme = useTheme();
   const dynamicStyles = useAppStyles(stylesFunc);
   const insets = useSafeAreaInsets();
@@ -96,7 +100,7 @@ export const AppBottomSheet = forwardRef<
         appearsOnIndex={0}
         disappearsOnIndex={-1}
         pressBehavior='close'
-        opacity={0.45}
+        opacity={0.4}
         onPress={close}
       />
     ),
@@ -123,15 +127,13 @@ export const AppBottomSheet = forwardRef<
       detached
       bottomInset={effectiveBottomInset}
       maxDynamicContentSize={maxSheetHeight}
-      style={styles.sheet}
-    >
+      style={styles.sheet}>
       <View style={styles.grabber} />
       <Pressable
         onPress={close}
         style={[styles.closeButton, dynamicStyles.closeButtonStyle]}
         accessibilityRole='button'
-        accessibilityLabel='Close'
-      >
+        accessibilityLabel='Close'>
         <AppIcon
           name='X'
           size={theme.iconSize.sm}
@@ -140,8 +142,17 @@ export const AppBottomSheet = forwardRef<
       </Pressable>
       <BottomSheetScrollView
         contentContainerStyle={styles.scrollContent}
-        style={style}
-      >
+        style={style}>
+        {title ? (
+          <View style={styles.header}>
+            <AppText variant='h5'>{title}</AppText>
+            {subtitle ? (
+              <AppText variant='bodySmall' color='secondary'>
+                {subtitle}
+              </AppText>
+            ) : null}
+          </View>
+        ) : null}
         {children}
       </BottomSheetScrollView>
     </BottomSheetModal>
@@ -151,8 +162,8 @@ export const AppBottomSheet = forwardRef<
 AppBottomSheet.displayName = 'AppBottomSheet';
 
 const stylesFunc = (colors: ColorPallete) => ({
-  backgroundStyle: { backgroundColor: colors.background.surface },
-  closeButtonStyle: { backgroundColor: colors.background.subtle },
+  backgroundStyle: { backgroundColor: colors.background.default },
+  closeButtonStyle: { backgroundColor: colors.background.surface },
 });
 
 const styles = StyleSheet.create({
@@ -160,7 +171,7 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing[3],
   },
   background: {
-    borderRadius: borderRadius['2xl'],
+    borderRadius: borderRadius['3xl'],
   },
   grabber: {
     alignSelf: 'center',
@@ -182,6 +193,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     opacity: 0.9,
+  },
+  header: {
+    paddingHorizontal: spacing[5],
+    paddingTop: spacing[3],
+    paddingBottom: spacing[3],
+    paddingRight: spacing[12],
+    gap: spacing[1],
   },
   scrollContent: {
     paddingBottom: spacing[6],

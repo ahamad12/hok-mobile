@@ -96,7 +96,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
       onPressOut={() => {
         press.value = withSpring(1, PRESS_SPRING);
       }}
-      accessibilityRole="switch"
+      accessibilityRole='switch'
       accessibilityState={{ checked: isDark }}
       accessibilityLabel={`Switch to ${isDark ? 'light' : 'dark'} mode`}
       hitSlop={8}
@@ -111,7 +111,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
         size={dim.icon}
         color={iconColor}
         strokeWidth={2}
-        spring="snappy"
+        spring='snappy'
       />
     </AnimatedPressable>
   );

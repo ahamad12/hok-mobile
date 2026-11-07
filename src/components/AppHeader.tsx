@@ -39,8 +39,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
     <Row
       align='center'
       justify='space-between'
-      style={[styles.container, style]}
-    >
+      style={[styles.container, style]}>
       <Row align='center' gap={3} flex={1}>
         {showBackButton && (
           <Pressable
@@ -48,8 +47,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             style={styles.backButton}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             accessibilityRole='button'
-            accessibilityLabel='Go back'
-          >
+            accessibilityLabel='Go back'>
             <AppIcon
               name='ChevronLeft'
               size={spacing[6]}
@@ -61,8 +59,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           variant='h5'
           weight='bold'
           numberOfLines={1}
-          style={styles.title}
-        >
+          style={styles.title}>
           {title}
         </AppText>
       </Row>

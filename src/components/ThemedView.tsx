@@ -3,14 +3,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
-  useColorScheme,
   ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { COLOR_THEME } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
-import { useSelectedTheme } from '@/store/selectors/appSelectors';
 import { Background } from '@/theme/Colors';
 
 export interface ThemedViewProps {
@@ -37,16 +34,11 @@ export const ThemedView: React.FC<ThemedViewProps> = ({
   topInset = true,
   statusBarStyle = 'auto',
 }) => {
-  const selectedTheme = useSelectedTheme();
-  const systemColorScheme = useColorScheme();
   const theme = useTheme();
 
   const resolvedStatusBarStyle = () => {
     if (statusBarStyle !== 'auto') return statusBarStyle;
-    if (selectedTheme === COLOR_THEME.SYSTEM_DEFAULT) {
-      return systemColorScheme === 'dark' ? 'light' : 'dark';
-    }
-    return selectedTheme === COLOR_THEME.DARK ? 'light' : 'dark';
+    return theme.colors.isDark ? 'light' : 'dark';
   };
 
   return (
@@ -58,14 +50,12 @@ export const ThemedView: React.FC<ThemedViewProps> = ({
         },
         style,
       ]}
-      edges={topInset ? ['top', 'bottom'] : ['bottom']}
-    >
+      edges={topInset ? ['top', 'bottom'] : ['bottom']}>
       <StatusBar style={resolvedStatusBarStyle()} />
       {keyboardAware ? (
         <KeyboardAvoidingView
           style={styles.container}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           {children}
         </KeyboardAvoidingView>
       ) : (

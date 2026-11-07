@@ -100,8 +100,7 @@ export const AppCard: React.FC<AppCardProps> = ({
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         style={[cardStyle, style, animatedStyle]}
-        accessibilityRole='button'
-      >
+        accessibilityRole='button'>
         {renderContent()}
         <Animated.View
           pointerEvents='none'

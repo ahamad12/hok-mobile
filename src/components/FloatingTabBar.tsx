@@ -1,4 +1,4 @@
-import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { BottomTabBarProps } from 'expo-router/tabs';
 import React, { useCallback, useEffect, useState } from 'react';
 import { LayoutChangeEvent, Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
@@ -9,42 +9,46 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useColors } from '@/contexts/ColorContext';
-import { createStyleSheet, useAppStyles } from '@/hooks/useAppStyles';
 import { borderRadius, shadows, spacing } from '@/theme/Common';
+
+import { AppText } from './AppText';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-const PILL_HEIGHT = 56;
-const TAB_ITEM_WIDTH = 60;
+const BAR_HEIGHT = 64;
 const BOTTOM_GAP = spacing[2];
-const PILL_INSET = spacing[1];
+const SIDE_GAP = spacing[4];
+const PILL_INSET = spacing[1] + 2;
 
 const SPRING = { damping: 22, stiffness: 280, mass: 0.8 } as const;
 
-export const FLOATING_TAB_CONTENT_INSET = PILL_HEIGHT + BOTTOM_GAP + spacing[2];
+/** Bottom padding a tab screen needs so content clears the bar. */
+export const FLOATING_TAB_CONTENT_INSET = BAR_HEIGHT + BOTTOM_GAP + spacing[4];
 
 interface TabItemProps {
   icon: React.ReactNode;
-  label?: string;
+  label: string;
+  color: string;
   isActive: boolean;
+  badge?: string | number;
   onPress: () => void;
   onLongPress: () => void;
 }
 
-function TabItem({ icon, label, isActive, onPress, onLongPress }: TabItemProps & { label?: string }) {
+function TabItem({
+  icon,
+  label,
+  color,
+  isActive,
+  badge,
+  onPress,
+  onLongPress,
+}: TabItemProps) {
+  const { colors } = useColors();
   const scale = useSharedValue(1);
-  const iconLift = useSharedValue(0);
-
-  useEffect(() => {
-    if (isActive) {
-      iconLift.value = withSpring(-2, { damping: 10, stiffness: 300 }, () => {
-        iconLift.value = withSpring(0, { damping: 10, stiffness: 300 });
-      });
-    }
-  }, [isActive, iconLift]);
 
   const onPressIn = useCallback(() => {
-    scale.value = withSpring(0.88, { damping: 14, stiffness: 380 });
+    scale.value = withSpring(0.9, { damping: 14, stiffness: 380 });
   }, [scale]);
 
   const onPressOut = useCallback(() => {
@@ -52,7 +56,7 @@ function TabItem({ icon, label, isActive, onPress, onLongPress }: TabItemProps &
   }, [scale]);
 
   const animatedScale = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }, { translateY: iconLift.value }],
+    transform: [{ scale: scale.value }],
   }));
 
   return (
@@ -64,9 +68,37 @@ function TabItem({ icon, label, isActive, onPress, onLongPress }: TabItemProps &
       onPressOut={onPressOut}
       hitSlop={{ top: 8, bottom: 8 }}
       accessibilityRole='tab'
-      accessibilityLabel={label}
+      accessibilityLabel={
+        badge !== undefined ? `${label}, ${badge} need attention` : label
+      }
       accessibilityState={{ selected: isActive }}>
-      {icon}
+      <View>
+        {icon}
+        {badge !== undefined ? (
+          <View
+            style={[
+              styles.badge,
+              { backgroundColor: colors.background.error },
+            ]}>
+            <AppText
+              variant='caption'
+              customColor={colors.text.white}
+              maxFontSizeMultiplier={1}
+              style={styles.badgeText}>
+              {typeof badge === 'number' && badge > 99 ? '99+' : String(badge)}
+            </AppText>
+          </View>
+        ) : null}
+      </View>
+      <AppText
+        variant='caption'
+        weight={isActive ? 'semibold' : 'medium'}
+        customColor={color}
+        numberOfLines={1}
+        maxFontSizeMultiplier={1.2}
+        style={styles.label}>
+        {label}
+      </AppText>
     </AnimatedPressable>
   );
 }
@@ -77,22 +109,35 @@ export function FloatingTabBar({
   navigation,
 }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
-  const dynamicStyles = useAppStyles(barStyles);
   const { colors } = useColors();
 
-  const [barWidth, setBarWidth] = useState(0);
-  const tabCount = state.routes.length;
+  // Only routes that declare a tab icon are real tabs; pushed screens
+  // registered with `href: null` have none.
+  const visible = state.routes
+    .map((route, index) => ({ route, index }))
+    .filter(({ route }) => {
+      const { options } = descriptors[route.key];
+      return typeof options.tabBarIcon === 'function';
+    });
 
+  const activeVisibleIndex = Math.max(
+    0,
+    visible.findIndex(({ index }) => index === state.index),
+  );
+  const isOnTab = visible.some(({ index }) => index === state.index);
+
+  const [barWidth, setBarWidth] = useState(0);
+  const tabCount = Math.max(visible.length, 1);
   const pillX = useSharedValue(0);
   const pillW = useSharedValue(0);
 
   useEffect(() => {
     if (barWidth > 0) {
       const tabW = barWidth / tabCount;
-      pillX.value = withSpring(state.index * tabW + PILL_INSET, SPRING);
+      pillX.value = withSpring(activeVisibleIndex * tabW + PILL_INSET, SPRING);
       pillW.value = tabW - PILL_INSET * 2;
     }
-  }, [state.index, barWidth, tabCount, pillX, pillW]);
+  }, [activeVisibleIndex, barWidth, tabCount, pillX, pillW]);
 
   const animatedPill = useAnimatedStyle(() => ({
     transform: [{ translateX: pillX.value }],
@@ -104,87 +149,87 @@ export function FloatingTabBar({
   }, []);
 
   return (
-    // Full-width transparent wrapper for centering — taps pass through the gap
     <View
       style={[styles.wrapper, { bottom: insets.bottom + BOTTOM_GAP }]}
       pointerEvents='box-none'>
       <View
-        style={[styles.bar, dynamicStyles.bar]}
-        onLayout={handleLayout}
-        pointerEvents='auto'>
-        {barWidth > 0 && (
-          <Animated.View
-            style={[styles.pill, dynamicStyles.pill, animatedPill]}
-          />
-        )}
-
-        {state.routes.map(
-          (route: (typeof state.routes)[number], index: number) => {
-            const { options } = descriptors[route.key];
-            const isActive = state.index === index;
-
-            const iconColor = isActive
-              ? colors.text.inverse
-              : colors.icon.tertiary;
-            const icon = options.tabBarIcon?.({
-              focused: isActive,
-              color: iconColor,
-              size: 22,
-            });
-
-            return (
-              <TabItem
-                key={route.key}
-                icon={icon}
-                label={options.tabBarAccessibilityLabel ?? route.name}
-                isActive={isActive}
-                onPress={() => {
-                  const event = navigation.emit({
-                    type: 'tabPress',
-                    target: route.key,
-                    canPreventDefault: true,
-                  });
-                  if (!isActive && !event.defaultPrevented) {
-                    navigation.navigate(route.name);
-                  }
-                }}
-                onLongPress={() => {
-                  navigation.emit({ type: 'tabLongPress', target: route.key });
-                }}
-              />
-            );
+        accessibilityRole='tablist'
+        style={[
+          styles.bar,
+          {
+            backgroundColor: colors.isDark
+              ? colors.background.surface
+              : colors.background.default,
           },
-        )}
+        ]}
+        onLayout={handleLayout}>
+        {barWidth > 0 && isOnTab ? (
+          <Animated.View
+            style={[
+              styles.pill,
+              {
+                backgroundColor: colors.isDark
+                  ? colors.background.subtle
+                  : colors.background.surface,
+              },
+              animatedPill,
+            ]}
+          />
+        ) : null}
+
+        {visible.map(({ route, index }) => {
+          const { options } = descriptors[route.key];
+          const isActive = state.index === index;
+          const color = isActive ? colors.brand.primary : colors.icon.tertiary;
+          const label =
+            typeof options.tabBarLabel === 'string'
+              ? options.tabBarLabel
+              : (options.title ?? route.name);
+
+          return (
+            <TabItem
+              key={route.key}
+              icon={options.tabBarIcon?.({
+                focused: isActive,
+                color,
+                size: 22,
+              })}
+              label={label}
+              color={color}
+              isActive={isActive}
+              badge={options.tabBarBadge}
+              onPress={() => {
+                const event = navigation.emit({
+                  type: 'tabPress',
+                  target: route.key,
+                  canPreventDefault: true,
+                });
+                if (!isActive && !event.defaultPrevented) {
+                  navigation.navigate(route.name);
+                }
+              }}
+              onLongPress={() => {
+                navigation.emit({ type: 'tabLongPress', target: route.key });
+              }}
+            />
+          );
+        })}
       </View>
     </View>
   );
 }
 
-const barStyles = createStyleSheet((colors) => ({
-  bar: {
-    backgroundColor: colors.background.surface,
-    shadowColor: colors.background.inverse,
-    borderColor: colors.border.subtle,
-  },
-  pill: {
-    backgroundColor: colors.brand.primary,
-  },
-}));
-
 const styles = StyleSheet.create({
   wrapper: {
     position: 'absolute',
-    left: 0,
-    right: 0,
-    alignItems: 'center',
+    left: SIDE_GAP,
+    right: SIDE_GAP,
   },
   bar: {
     flexDirection: 'row',
-    height: PILL_HEIGHT,
+    height: BAR_HEIGHT,
     borderRadius: borderRadius.full,
-    borderWidth: 1,
-    overflow: 'hidden',
-    ...shadows['2xl'],
+    ...shadows.soft,
   },
   pill: {
     position: 'absolute',
@@ -194,9 +239,29 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.full,
   },
   tabItem: {
-    width: TAB_ITEM_WIDTH,
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 2,
     zIndex: 1,
   },
+  label: { fontSize: 11, lineHeight: 14 },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -10,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 4,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeText: { fontSize: 10, lineHeight: 12, fontWeight: '700' },
 });
+
+/** Bottom padding for scroll content on a tab screen (bar + safe area). */
+export function useTabBarInset(): number {
+  const insets = useSafeAreaInsets();
+  return insets.bottom + FLOATING_TAB_CONTENT_INSET;
+}

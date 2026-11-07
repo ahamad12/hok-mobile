@@ -74,17 +74,9 @@ export const useTheme = () => {
       const sizeStyles = buttonSize[size];
       const variantStyles: Record<string, ViewStyle> = {
         primary: { backgroundColor: colors.button.primary.default },
-        secondary: {
-          backgroundColor: colors.button.secondary.default,
-          borderWidth: 2,
-          borderColor: colors.button.secondary.border,
-        },
+        secondary: { backgroundColor: colors.button.secondary.default },
         tertiary: { backgroundColor: colors.button.tertiary.default },
-        outline: {
-          backgroundColor: 'transparent',
-          borderWidth: 2,
-          borderColor: colors.border.default,
-        },
+        outline: { backgroundColor: colors.background.surface },
         ghost: {
           backgroundColor: 'transparent',
         },
@@ -106,40 +98,25 @@ export const useTheme = () => {
       const sizeStyles = inputSize[size];
       return {
         ...sizeStyles,
-        backgroundColor: colors.background.default,
-        borderWidth: 1,
-        borderColor: hasError ? colors.border.error : colors.border.default,
+        backgroundColor: hasError
+          ? colors.background.errorSubtle
+          : colors.background.surface,
+        borderWidth: 0,
       };
     };
 
+    // Borderless cards: a tonal surface, no stroke, no shadow.
     const getCardStyle = (
-      variant: 'flat' | 'outlined' | 'elevated' = 'elevated',
-    ): ViewStyle => {
-      const shadow = getShadow(variant === 'elevated' ? 'md' : 'none');
-      const baseStyles: ViewStyle = {
-        backgroundColor: colors.background.default,
-        borderRadius: borderRadius['2xl'],
-        padding: spacing[4],
-      };
-
-      const variantStyles: Record<string, ViewStyle> = {
-        flat: {},
-        outlined: {
-          borderWidth: 1,
-          borderColor: colors.border.subtle,
-        },
-        elevated: {
-          ...shadow,
-          borderWidth: 1,
-          borderColor: colors.border.subtle,
-        },
-      };
-
-      return {
-        ...baseStyles,
-        ...variantStyles[variant],
-      };
-    };
+      variant: 'flat' | 'outlined' | 'elevated' = 'flat',
+    ): ViewStyle => ({
+      backgroundColor:
+        variant === 'elevated'
+          ? colors.background.default
+          : colors.background.surface,
+      borderRadius: borderRadius.xl,
+      padding: spacing[4],
+      ...(variant === 'elevated' ? getShadow('soft') : {}),
+    });
 
     return {
       // Design tokens

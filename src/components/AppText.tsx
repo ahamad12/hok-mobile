@@ -3,6 +3,7 @@ import { Text, TextProps, TextStyle } from 'react-native';
 
 import { useTheme } from '@/hooks/useTheme';
 import { FontWeightKey, TypographyVariant } from '@/theme/Common';
+import { familyFor } from '@/theme/fontState';
 
 export interface AppTextProps extends TextProps {
   variant?: TypographyVariant;
@@ -56,12 +57,18 @@ export const AppText: React.FC<AppTextProps> = ({
       return theme.fontWeight.normal;
     };
 
+    const resolvedWeight = getFontWeight();
+    const family = familyFor(resolvedWeight);
+
     return {
+      ...(family ? { fontFamily: family } : {}),
       fontSize: baseStyle.fontSize,
       lineHeight: baseStyle.lineHeight,
       letterSpacing: baseStyle.letterSpacing,
       color: customColor || baseStyle.color,
-      fontWeight: getFontWeight(),
+      // With a custom family the weight lives in the file; keep fontWeight
+      // only for the system-font fallback.
+      fontWeight: family ? undefined : resolvedWeight,
       ...(align && { textAlign: align }),
       ...(uppercase && { textTransform: 'uppercase' }),
       ...(italic && { fontStyle: 'italic' }),

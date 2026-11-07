@@ -47,7 +47,7 @@ export const AppToggle: React.FC<AppToggleProps> = ({
     backgroundColor: interpolateColor(
       progress.value,
       [0, 1],
-      [colors.background.subtle, colors.brand.primary],
+      [colors.background.subtle, colors.brand.accent],
     ),
     opacity: disabled ? 0.5 : 1,
     transform: [{ scale: pressScale.value }],

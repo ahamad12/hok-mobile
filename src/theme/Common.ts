@@ -47,6 +47,20 @@ export type FontWeightValue =
   | '800'
   | '900';
 
+/** Plus Jakarta Sans file per weight. Android ignores `fontWeight` on custom
+ * fonts, so text must pick the family that matches its weight. */
+export const fontFamily: Record<FontWeightValue, string> = {
+  '100': 'PlusJakartaSans_400Regular',
+  '200': 'PlusJakartaSans_400Regular',
+  '300': 'PlusJakartaSans_400Regular',
+  '400': 'PlusJakartaSans_400Regular',
+  '500': 'PlusJakartaSans_500Medium',
+  '600': 'PlusJakartaSans_600SemiBold',
+  '700': 'PlusJakartaSans_700Bold',
+  '800': 'PlusJakartaSans_800ExtraBold',
+  '900': 'PlusJakartaSans_800ExtraBold',
+};
+
 export const spacing = {
   0: 0,
   1: 4,
@@ -110,111 +124,42 @@ export const letterSpacing = {
   widest: 1.6,
 } as const;
 
+const t = (
+  size: number,
+  lh: number,
+  weight: FontWeightValue,
+  tracking = 0,
+) => ({
+  fontSize: size,
+  lineHeight: Math.round(size * lh),
+  fontWeight: weight,
+  letterSpacing: tracking,
+});
+
+/** Sleek scale: heavy, tight display type; calm body. */
 export const typography = {
-  // Headings
-  h1: {
-    fontSize: fontSize['5xl'],
-    lineHeight: fontSize['5xl'] * lineHeight.tight,
-    fontWeight: fontWeight.bold,
-    letterSpacing: letterSpacing.tight,
-  },
-  h2: {
-    fontSize: fontSize['4xl'],
-    lineHeight: fontSize['4xl'] * lineHeight.tight,
-    fontWeight: fontWeight.bold,
-    letterSpacing: letterSpacing.tight,
-  },
-  h3: {
-    fontSize: fontSize['3xl'],
-    lineHeight: fontSize['3xl'] * lineHeight.snug,
-    fontWeight: fontWeight.bold,
-    letterSpacing: letterSpacing.normal,
-  },
-  h4: {
-    fontSize: fontSize['2xl'],
-    lineHeight: fontSize['2xl'] * lineHeight.snug,
-    fontWeight: fontWeight.bold,
-    letterSpacing: letterSpacing.normal,
-  },
-  h5: {
-    fontSize: fontSize.xl,
-    lineHeight: fontSize.xl * lineHeight.normal,
-    fontWeight: fontWeight.bold,
-    letterSpacing: letterSpacing.normal,
-  },
-  h6: {
-    fontSize: fontSize.lg,
-    lineHeight: fontSize.lg * lineHeight.normal,
-    fontWeight: fontWeight.bold,
-    letterSpacing: letterSpacing.normal,
-  },
+  h1: t(36, 1.15, '800', -0.8),
+  h2: t(32, 1.15, '800', -0.7),
+  h3: t(28, 1.2, '800', -0.6),
+  h4: t(22, 1.25, '700', -0.4),
+  h5: t(20, 1.3, '700', -0.3),
+  h6: t(17, 1.35, '700', -0.2),
 
-  // Body Text
-  bodyLarge: {
-    fontSize: fontSize.lg,
-    lineHeight: fontSize.lg * lineHeight.relaxed,
-    fontWeight: fontWeight.normal,
-    letterSpacing: letterSpacing.normal,
-  },
-  body: {
-    fontSize: fontSize.base,
-    lineHeight: fontSize.base * lineHeight.normal,
-    fontWeight: fontWeight.normal,
-    letterSpacing: letterSpacing.normal,
-  },
-  bodySmall: {
-    fontSize: fontSize.sm,
-    lineHeight: fontSize.sm * lineHeight.normal,
-    fontWeight: fontWeight.normal,
-    letterSpacing: letterSpacing.normal,
-  },
+  bodyLarge: t(18, 1.5, '400'),
+  body: t(16, 1.5, '400'),
+  bodySmall: t(14, 1.45, '400'),
 
-  // Labels & Captions
-  label: {
-    fontSize: fontSize.sm,
-    lineHeight: fontSize.sm * lineHeight.tight,
-    fontWeight: fontWeight.medium,
-    letterSpacing: letterSpacing.wide,
-  },
-  caption: {
-    fontSize: fontSize.xs,
-    lineHeight: fontSize.xs * lineHeight.normal,
-    fontWeight: fontWeight.normal,
-    letterSpacing: letterSpacing.normal,
-  },
+  label: t(14, 1.3, '600'),
+  caption: t(12, 1.4, '500'),
   overline: {
-    fontSize: fontSize.xs,
-    lineHeight: fontSize.xs * lineHeight.tight,
-    fontWeight: fontWeight.bold,
-    letterSpacing: letterSpacing.widest,
-    textTransform: 'uppercase' as const,
+    ...t(12, 1.3, '600', 0.4),
+    textTransform: 'none' as const,
   },
 
-  // Interactive Elements
-  button: {
-    fontSize: fontSize.base,
-    lineHeight: fontSize.base * lineHeight.tight,
-    fontWeight: fontWeight.semibold,
-    letterSpacing: letterSpacing.normal,
-  },
-  buttonSmall: {
-    fontSize: fontSize.sm,
-    lineHeight: fontSize.sm * lineHeight.tight,
-    fontWeight: fontWeight.semibold,
-    letterSpacing: letterSpacing.normal,
-  },
-  buttonLarge: {
-    fontSize: fontSize.lg,
-    lineHeight: fontSize.lg * lineHeight.tight,
-    fontWeight: fontWeight.semibold,
-    letterSpacing: letterSpacing.normal,
-  },
-  link: {
-    fontSize: fontSize.base,
-    lineHeight: fontSize.base * lineHeight.normal,
-    fontWeight: fontWeight.medium,
-    letterSpacing: letterSpacing.normal,
-  },
+  button: t(16, 1.25, '600'),
+  buttonSmall: t(14, 1.25, '600'),
+  buttonLarge: t(17, 1.25, '600'),
+  link: t(16, 1.5, '600'),
 } as const;
 
 export const borderRadius = {
@@ -225,11 +170,19 @@ export const borderRadius = {
   lg: 16,
   xl: 20,
   '2xl': 24,
-  '3xl': 32,
+  '3xl': 28,
   full: 9999,
 } as const;
 
 export const shadows = {
+  /** The only shadow used in the borderless system: floating elements. */
+  soft: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 24,
+    elevation: 8,
+  },
   none: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 0 },
@@ -338,21 +291,21 @@ export const iconSize = {
 export const buttonSize = {
   sm: {
     paddingVertical: spacing[2],
-    paddingHorizontal: spacing[3],
-    minHeight: 32,
-    borderRadius: borderRadius.base,
+    paddingHorizontal: spacing[4],
+    minHeight: 36,
+    borderRadius: borderRadius.full,
   },
   base: {
     paddingVertical: spacing[3],
-    paddingHorizontal: spacing[4],
-    minHeight: 44,
-    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing[5],
+    minHeight: 52,
+    borderRadius: borderRadius.full,
   },
   lg: {
     paddingVertical: spacing[4],
     paddingHorizontal: spacing[6],
     minHeight: 56,
-    borderRadius: borderRadius.lg,
+    borderRadius: borderRadius.full,
   },
 } as const;
 
@@ -365,20 +318,20 @@ export const inputSize = {
   sm: {
     paddingVertical: spacing[2],
     paddingHorizontal: spacing[3],
-    minHeight: 36,
-    borderRadius: borderRadius.base,
+    minHeight: 40,
+    borderRadius: 12,
   },
   base: {
     paddingVertical: spacing[3],
     paddingHorizontal: spacing[4],
-    minHeight: 48,
-    borderRadius: borderRadius.md,
+    minHeight: 52,
+    borderRadius: 14,
   },
   lg: {
     paddingVertical: spacing[4],
     paddingHorizontal: spacing[4],
     minHeight: 56,
-    borderRadius: borderRadius.lg,
+    borderRadius: 16,
   },
 } as const;
 

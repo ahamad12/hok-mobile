@@ -76,8 +76,7 @@ export class AppErrorBoundary extends Component<
               variant='primary'
               fullWidth
               onPress={this.handleRetry}
-              style={styles.retryButton}
-            >
+              style={styles.retryButton}>
               Try again
             </AppButton>
           </Column>

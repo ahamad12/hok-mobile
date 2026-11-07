@@ -33,6 +33,9 @@ export const ENDPOINTS = {
     REMOVE_STAFF: (shopId: string, userId: string) =>
       `shops/${shopId}/staff/${userId}`,
   },
+  TEAM: {
+    MEMBERS: 'team/members',
+  },
   CATEGORIES: {
     CREATE: 'categories',
     LIST: 'categories',
@@ -112,6 +115,7 @@ export const ENDPOINTS = {
     RETURN_PACK: (id: string) => `scratch/packs/${id}/return`,
     SCAN: (id: string) => `scratch/packs/${id}/scans`,
     SUMMARY: 'scratch/summary',
+    LIST_SCANS: 'scratch/scans',
     VOID_SCAN: (id: string) => `scratch/scans/${id}/void`,
   },
   TASKS: {

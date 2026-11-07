@@ -17,6 +17,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { useTheme } from '@/hooks/useTheme';
+import { palette } from '@/theme/Colors';
 import { borderRadius, ButtonSize } from '@/theme/Common';
 
 import { AppIcon, AppIconProps } from './AppIcon';
@@ -25,10 +26,13 @@ import { AppText } from './AppText';
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const SPRING = { damping: 15, stiffness: 400, mass: 0.8 } as const;
+const BRAND_PRESSED = '#A33A16';
 
 export interface AppButtonProps extends Omit<PressableProps, 'style'> {
   variant?:
     | 'primary'
+    /** Hok rust, square-cornered. Used for the one main action on auth screens. */
+    | 'brand'
     | 'secondary'
     | 'tertiary'
     | 'outline'
@@ -86,7 +90,9 @@ export const AppButton: React.FC<AppButtonProps> = ({
         variant === 'success' ||
         variant === 'warning'
         ? 'tertiary'
-        : variant,
+        : variant === 'brand'
+          ? 'primary'
+          : variant,
       size,
     );
 
@@ -98,16 +104,15 @@ export const AppButton: React.FC<AppButtonProps> = ({
             ? theme.colors.button.primary.pressed
             : theme.colors.button.primary.default,
       },
+      brand: {
+        backgroundColor: isPressed ? BRAND_PRESSED : palette.hok.rust,
+      },
       secondary: {
         backgroundColor: disabled
           ? theme.colors.button.secondary.disabled
           : isPressed
             ? theme.colors.button.secondary.pressed
             : theme.colors.button.secondary.default,
-        borderWidth: 2,
-        borderColor: disabled
-          ? theme.colors.button.secondary.disabled
-          : theme.colors.button.secondary.border,
       },
       tertiary: {
         backgroundColor: disabled
@@ -116,26 +121,24 @@ export const AppButton: React.FC<AppButtonProps> = ({
             ? theme.colors.button.tertiary.pressed
             : theme.colors.button.tertiary.default,
       },
+      // Borderless: "outline" is a tonal fill like secondary.
       outline: {
-        backgroundColor: 'transparent',
-        borderWidth: 2,
-        borderColor: disabled
-          ? theme.colors.border.disabled
-          : isPressed
-            ? theme.colors.border.focus
-            : theme.colors.border.default,
+        backgroundColor: isPressed
+          ? theme.colors.background.subtle
+          : theme.colors.background.surface,
       },
       ghost: {
         backgroundColor: isPressed
           ? theme.colors.background.overlay
           : 'transparent',
       },
+      // Soft destructive: red text on a faint red tint.
       destructive: {
         backgroundColor: disabled
           ? theme.colors.button.destructive.disabled
           : isPressed
-            ? theme.colors.button.destructive.pressed
-            : theme.colors.button.destructive.default,
+            ? theme.colors.background.error + '33'
+            : theme.colors.background.errorSubtle,
       },
       success: {
         backgroundColor: disabled
@@ -155,6 +158,9 @@ export const AppButton: React.FC<AppButtonProps> = ({
 
     const getRoundedRadius = (): number => {
       if (rounded === false) {
+        if (variant === 'brand') {
+          return 0;
+        }
         const br = baseStyle.borderRadius;
         return typeof br === 'number' ? br : 0;
       }
@@ -173,6 +179,10 @@ export const AppButton: React.FC<AppButtonProps> = ({
   }, [theme, variant, size, disabled, isPressed, fullWidth, rounded]);
 
   const textColor = useMemo(() => {
+    if (variant === 'brand') {
+      // Disabled state is shown by the 0.5 opacity; keep white on rust.
+      return '#FFFFFF';
+    }
     if (disabled) {
       return theme.colors.text.disabled;
     }
@@ -181,14 +191,14 @@ export const AppButton: React.FC<AppButtonProps> = ({
       case 'primary':
         return theme.colors.text.inverse;
       case 'secondary':
-        return theme.colors.brand.primary;
+        return theme.colors.text.primary;
       case 'tertiary':
         return theme.colors.text.primary;
       case 'outline':
       case 'ghost':
         return theme.colors.text.primary;
       case 'destructive':
-        return theme.colors.text.inverse;
+        return theme.colors.text.error;
       case 'success':
         return theme.colors.text.inverse;
       case 'warning':
@@ -203,9 +213,9 @@ export const AppButton: React.FC<AppButtonProps> = ({
       case 'sm':
         return theme.iconSize.sm;
       case 'lg':
-        return theme.iconSize.md;
-      default:
         return theme.iconSize.base;
+      default:
+        return theme.iconSize.sm;
     }
   }, [theme, size]);
 
@@ -260,11 +270,13 @@ export const AppButton: React.FC<AppButtonProps> = ({
       disabled={disabled || loading}
       accessibilityRole='button'
       accessibilityState={{ disabled: disabled || loading, busy: loading }}
-      {...props}
-    >
+      {...props}>
       <View
-        style={{ opacity: loading ? 0 : 1, flexDirection: 'row', alignItems: 'center' }}
-      >
+        style={{
+          opacity: loading ? 0 : 1,
+          flexDirection: 'row',
+          alignItems: 'center',
+        }}>
         {iconLeft && (
           <AppIcon
             name={iconLeft}
@@ -283,8 +295,7 @@ export const AppButton: React.FC<AppButtonProps> = ({
                   : 'button'
             }
             customColor={textColor}
-            style={textStyle}
-          >
+            style={textStyle}>
             {children}
           </AppText>
         )}
@@ -298,10 +309,7 @@ export const AppButton: React.FC<AppButtonProps> = ({
         )}
       </View>
       {loading && (
-        <ActivityIndicator
-          color={textColor}
-          style={StyleSheet.absoluteFill}
-        />
+        <ActivityIndicator color={textColor} style={StyleSheet.absoluteFill} />
       )}
     </AnimatedPressable>
   );

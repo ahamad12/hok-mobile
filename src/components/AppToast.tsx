@@ -153,14 +153,25 @@ export const AppToast: React.FC = () => {
         if (finished && variant === 'loading') {
           shimmerX.value = -1;
           shimmerX.value = withRepeat(
-            withTiming(1, { duration: 1600, easing: Easing.inOut(Easing.quad) }),
+            withTiming(1, {
+              duration: 1600,
+              easing: Easing.inOut(Easing.quad),
+            }),
             -1,
             false,
           );
         }
       });
     },
-    [closeButtonRotation, iconScale, opacity, shimmerWidth, shimmerX, swipeY, translateY],
+    [
+      closeButtonRotation,
+      iconScale,
+      opacity,
+      shimmerWidth,
+      shimmerX,
+      swipeY,
+      translateY,
+    ],
   );
 
   const slideOut = useCallback(
@@ -190,7 +201,10 @@ export const AppToast: React.FC = () => {
       if (timerRef.current) clearTimeout(timerRef.current);
       cancelAnimation(shimmerX);
 
-      shimmerX.value = withTiming(0, { duration: 300, easing: Easing.out(Easing.cubic) });
+      shimmerX.value = withTiming(0, {
+        duration: 300,
+        easing: Easing.out(Easing.cubic),
+      });
       shimmerWidth.value = withTiming(
         1,
         { duration: 300, easing: Easing.out(Easing.cubic) },
@@ -220,7 +234,10 @@ export const AppToast: React.FC = () => {
         gs: PanResponderGestureState,
       ) => Math.abs(gs.dy) > 5,
 
-      onPanResponderMove: (_e: GestureResponderEvent, gs: PanResponderGestureState) => {
+      onPanResponderMove: (
+        _e: GestureResponderEvent,
+        gs: PanResponderGestureState,
+      ) => {
         if (gs.dy < 0) {
           swipeY.value = gs.dy;
           opacity.value = Math.max(0, 1 + gs.dy / 70);
@@ -229,7 +246,10 @@ export const AppToast: React.FC = () => {
         }
       },
 
-      onPanResponderRelease: (_e: GestureResponderEvent, gs: PanResponderGestureState) => {
+      onPanResponderRelease: (
+        _e: GestureResponderEvent,
+        gs: PanResponderGestureState,
+      ) => {
         if (gs.dy < SWIPE_THRESHOLD || gs.vy < -0.6) {
           if (timerRef.current) clearTimeout(timerRef.current);
 
@@ -294,7 +314,9 @@ export const AppToast: React.FC = () => {
     }
 
     const duration =
-      variant === 'loading' ? 0 : (toast.duration ?? VARIANT_DURATIONS[variant] ?? DEFAULT_DURATION);
+      variant === 'loading'
+        ? 0
+        : (toast.duration ?? VARIANT_DURATIONS[variant] ?? DEFAULT_DURATION);
 
     if (duration > 0) {
       timerRef.current = setTimeout(() => slideOut(hideToast), duration);
@@ -330,17 +352,25 @@ export const AppToast: React.FC = () => {
       // A toast is a live status update, not a modal — announce it to
       // screen readers without stealing focus the way an alert dialog
       // would.
-      accessibilityRole="alert"
-      accessibilityLiveRegion="polite"
-      importantForAccessibility="yes"
+      accessibilityRole='alert'
+      accessibilityLiveRegion='polite'
+      importantForAccessibility='yes'
       style={[
         styles.wrapper,
         { top: insets.top + spacing[3] },
         wrapperAnimatedStyle,
       ]}>
-      <View style={[styles.borderContainer, { backgroundColor: variantColors.borderBg }]}>
+      <View
+        style={[
+          styles.borderContainer,
+          { backgroundColor: variantColors.borderBg },
+        ]}>
         {isLoading && (
-          <LoadingShimmer shimmerX={shimmerX} shimmerWidth={shimmerWidth} colors={toastColors} />
+          <LoadingShimmer
+            shimmerX={shimmerX}
+            shimmerWidth={shimmerWidth}
+            colors={toastColors}
+          />
         )}
 
         <Pressable
@@ -348,7 +378,7 @@ export const AppToast: React.FC = () => {
           disabled={isLoading}
           style={{ flex: 1 }}>
           <Row
-            align="center"
+            align='center'
             gap={spacing[1]}
             style={[
               styles.card,
@@ -366,11 +396,11 @@ export const AppToast: React.FC = () => {
 
             <Column flex={1}>
               {activeToast.title && (
-                <AppText variant="label" weight="semibold" numberOfLines={1}>
+                <AppText variant='label' weight='semibold' numberOfLines={1}>
                   {activeToast.title}
                 </AppText>
               )}
-              <AppText variant="bodySmall" color="secondary" numberOfLines={2}>
+              <AppText variant='bodySmall' color='secondary' numberOfLines={2}>
                 {activeToast.message}
               </AppText>
             </Column>
@@ -397,13 +427,22 @@ const LoadingShimmer: React.FC<{
 }> = ({ shimmerX, shimmerWidth, colors }) => {
   const shimmerAnimatedStyle = useAnimatedStyle(() => ({
     width: `${interpolate(shimmerWidth.value, [0, 2], [0, 200])}%`,
-    transform: [{ translateX: interpolate(shimmerX.value, [-1, 1], [-340, 340]) }],
+    transform: [
+      { translateX: interpolate(shimmerX.value, [-1, 1], [-340, 340]) },
+    ],
   }));
 
   return (
-    <Animated.View pointerEvents="none" style={[styles.shimmerOverlay, shimmerAnimatedStyle]}>
+    <Animated.View
+      pointerEvents='none'
+      style={[styles.shimmerOverlay, shimmerAnimatedStyle]}>
       <LinearGradient
-        colors={['transparent', colors.shimmerStart, colors.shimmerEnd, 'transparent']}
+        colors={[
+          'transparent',
+          colors.shimmerStart,
+          colors.shimmerEnd,
+          'transparent',
+        ]}
         start={{ x: 0, y: 0.5 }}
         end={{ x: 1, y: 0.5 }}
         style={styles.gradientBeam}
@@ -465,9 +504,14 @@ const DismissButton: React.FC<{
           dismissBgStyle,
           { transform: [{ scale: pressed ? 0.95 : 1 }] },
         ]}
-        accessibilityRole="button"
-        accessibilityLabel="Dismiss notification">
-        <AppIcon name="X" size={18} color={dismissIconColor} strokeWidth={2.5} />
+        accessibilityRole='button'
+        accessibilityLabel='Dismiss notification'>
+        <AppIcon
+          name='X'
+          size={18}
+          color={dismissIconColor}
+          strokeWidth={2.5}
+        />
       </Pressable>
     </Animated.View>
   );

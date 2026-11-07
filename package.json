@@ -25,7 +25,9 @@
     "typecheck": "tsc --noemit"
   },
   "dependencies": {
+    "@expo-google-fonts/plus-jakarta-sans": "^0.4.2",
     "@gorhom/bottom-sheet": "^5.0.0",
+    "@hookform/resolvers": "5.9.1",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/netinfo": "12.0.1",
     "@react-navigation/bottom-tabs": "^7.18.18",
@@ -36,6 +38,7 @@
     "axios": "^1.9.0",
     "expo": "~57.0.19",
     "expo-constants": "~57.0.17",
+    "expo-font": "~57.0.4",
     "expo-linear-gradient": "~57.0.1",
     "expo-linking": "~57.0.9",
     "expo-localization": "~57.0.1",
@@ -50,6 +53,7 @@
     "lucide-react-native": "^0.511.0",
     "morphicons": "^1.7.1",
     "react": "19.2.3",
+    "react-hook-form": "7.87.0",
     "react-native": "0.86.3",
     "react-native-dotenv": "^3.4.11",
     "react-native-gesture-handler": "~2.32.0",
@@ -61,6 +65,7 @@
     "react-native-svg-transformer": "^1.5.1",
     "react-native-worklets": "0.10.1",
     "socket.io-client": "^4.8.3",
+    "zod": "4.5.4",
     "zustand": "^5.0.8"
   },
   "devDependencies": {
@@ -68,10 +73,12 @@
     "@babel/plugin-proposal-export-namespace-from": "^7.18.9",
     "@types/eslint-plugin-jsx-a11y": "^6",
     "@types/eslint-plugin-security": "^3",
+    "@types/jest": "^30",
     "@types/lodash": "^4",
     "@types/react": "~19.2.4",
     "@typescript-eslint/eslint-plugin": "^7.12.0",
     "@typescript-eslint/parser": "^7.12.0",
+    "axios-mock-adapter": "^2",
     "babel-plugin-module-resolver": "^5.0.2",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.0",
@@ -89,6 +96,7 @@
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-testing-library": "^7.6.8",
     "eslint-plugin-unicorn": "48",
+    "jest": "30.5.1",
     "prettier": "^3.4.2",
     "typescript": "~6.0.3"
   },

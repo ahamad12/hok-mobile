@@ -1,4 +1,11 @@
-import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   BlurEvent,
   FocusEvent,
@@ -18,6 +25,7 @@ import Animated, {
 
 import { useTheme } from '@/hooks/useTheme';
 import { InputSize } from '@/theme/Common';
+import { familyFor } from '@/theme/fontState';
 
 import { AppIcon, AppIconProps } from './AppIcon';
 import { AppText } from './AppText';
@@ -107,16 +115,15 @@ export const AppInput = forwardRef<TextInput, AppInputProps>(
         ...baseStyle,
         flexDirection: 'row',
         alignItems: 'center',
-        borderColor: error
-          ? theme.colors.border.error
-          : isFocused
-            ? theme.colors.border.focus
-            : disabled
-              ? theme.colors.border.disabled
-              : theme.colors.border.default,
-        backgroundColor: disabled
-          ? theme.colors.background.disabled
-          : theme.colors.background.default,
+        // Borderless: state is shown by the fill, not a stroke.
+        borderWidth: 0,
+        backgroundColor: error
+          ? theme.colors.background.errorSubtle
+          : disabled
+            ? theme.colors.background.disabled
+            : isFocused
+              ? theme.colors.background.subtle
+              : theme.colors.background.surface,
         opacity: disabled ? theme.opacity[60] : theme.opacity[100],
       };
     }, [theme, size, error, isFocused, disabled]);
@@ -131,10 +138,9 @@ export const AppInput = forwardRef<TextInput, AppInputProps>(
       [theme, error],
     );
 
+    // No glow in the borderless system; kept as a no-op animated style.
     const animatedGlowStyle = useAnimatedStyle(() => ({
-      shadowOpacity: glowAnim.value * 0.18,
-      shadowRadius: glowAnim.value * 10,
-      elevation: glowAnim.value * 4,
+      shadowOpacity: glowAnim.value * 0,
     }));
 
     const inputTextStyle = useMemo(() => {
@@ -144,7 +150,9 @@ export const AppInput = forwardRef<TextInput, AppInputProps>(
           ? theme.colors.text.disabled
           : theme.colors.text.primary,
         fontSize: theme.fontSize.base,
-        fontWeight: theme.fontWeight.normal,
+        ...(familyFor('500')
+          ? { fontFamily: familyFor('500') }
+          : { fontWeight: theme.fontWeight.medium }),
         padding: 0,
       };
     }, [theme, disabled]);
@@ -172,7 +180,9 @@ export const AppInput = forwardRef<TextInput, AppInputProps>(
       <AppView style={containerStyle}>
         {label && (
           <AppView mb={2} row align='center'>
-            <AppText variant='label'>{label}</AppText>
+            <AppText variant='label' color='secondary'>
+              {label}
+            </AppText>
             {required && (
               <AppText variant='label' customColor={theme.colors.status.error}>
                 {' '}
@@ -191,56 +201,56 @@ export const AppInput = forwardRef<TextInput, AppInputProps>(
               animatedGlowStyle,
               wrapperStyle,
             ]}>
-          {iconLeft && (
-            <AppIcon
-              name={iconLeft}
-              size={theme.iconSize.base}
-              color={iconColor}
-              style={{ marginRight: theme.spacing[2] }}
+            {iconLeft && (
+              <AppIcon
+                name={iconLeft}
+                size={theme.iconSize.sm}
+                color={iconColor}
+                style={{ marginRight: theme.spacing[3] }}
+              />
+            )}
+
+            <TextInput
+              ref={mergedRef}
+              style={[inputTextStyle, style]}
+              placeholderTextColor={theme.colors.text.tertiary}
+              editable={!disabled}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              accessibilityLabel={label}
+              accessibilityState={{ disabled }}
+              maxFontSizeMultiplier={1.5}
+              allowFontScaling={true}
+              secureTextEntry={isPassword && !isPasswordVisible}
+              {...props}
             />
-          )}
 
-          <TextInput
-            ref={mergedRef}
-            style={[inputTextStyle, style]}
-            placeholderTextColor={theme.colors.text.tertiary}
-            editable={!disabled}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            accessibilityLabel={label}
-            accessibilityState={{ disabled }}
-            maxFontSizeMultiplier={1.5}
-            allowFontScaling={true}
-            secureTextEntry={isPassword && !isPasswordVisible}
-            {...props}
-          />
-
-          {isPassword ? (
-            <Pressable
-              onPress={() => setIsPasswordVisible((v) => !v)}
-              hitSlop={8}
-              accessibilityRole='button'
-              accessibilityLabel={
-                isPasswordVisible ? 'Hide password' : 'Show password'
-              }
-              style={{ marginLeft: theme.spacing[2] }}>
-              <AppIcon
-                name={isPasswordVisible ? 'EyeOff' : 'Eye'}
-                size={theme.iconSize.base}
-                color={iconColor}
-                strokeWidth={1.5}
-              />
-            </Pressable>
-          ) : (
-            iconRight && (
-              <AppIcon
-                name={iconRight}
-                size={theme.iconSize.base}
-                color={iconColor}
-                style={{ marginLeft: theme.spacing[2] }}
-              />
-            )
-          )}
+            {isPassword ? (
+              <Pressable
+                onPress={() => setIsPasswordVisible((v) => !v)}
+                hitSlop={8}
+                accessibilityRole='button'
+                accessibilityLabel={
+                  isPasswordVisible ? 'Hide password' : 'Show password'
+                }
+                style={{ marginLeft: theme.spacing[2] }}>
+                <AppIcon
+                  name={isPasswordVisible ? 'EyeOff' : 'Eye'}
+                  size={theme.iconSize.sm}
+                  color={iconColor}
+                  strokeWidth={1.75}
+                />
+              </Pressable>
+            ) : (
+              iconRight && (
+                <AppIcon
+                  name={iconRight}
+                  size={theme.iconSize.base}
+                  color={iconColor}
+                  style={{ marginLeft: theme.spacing[2] }}
+                />
+              )
+            )}
           </AnimatedPressable>
         </Animated.View>
 
