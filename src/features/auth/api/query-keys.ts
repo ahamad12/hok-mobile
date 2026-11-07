@@ -4,5 +4,4 @@ export const authKeys = {
   profile: () => [...authKeys.all, 'profile'] as const,
   sessions: () => [...authKeys.all, 'sessions'] as const,
   invitations: () => [...authKeys.all, 'invitations'] as const,
-  shops: () => [...authKeys.all, 'shops'] as const,
 };

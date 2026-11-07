@@ -79,8 +79,6 @@ export type Session = {
   isCurrent: boolean;
 };
 
-export type ShopOption = { id: string; name: string };
-
 /**
  * Returned by GET/PATCH /auth/profile only. Structurally extends
  * UserSummary, so a UserProfile value satisfies anything typed as

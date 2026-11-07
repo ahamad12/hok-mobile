@@ -16,7 +16,6 @@ import {
   LoginInput,
   RegisterInput,
   Session,
-  ShopOption,
   UpdateProfileInput,
   UserProfile,
 } from './auth.types';
@@ -140,12 +139,4 @@ export async function revokeInvitation(id: string): Promise<Invitation> {
       { data: {} },
     ),
   );
-}
-
-/** Shops the caller can assign an invitee to. */
-export async function getMyShops(): Promise<ShopOption[]> {
-  const res = await authedClient.get<ApiResponse<{ shops: ShopOption[] }>>(
-    ENDPOINTS.SHOPS.LIST_MY,
-  );
-  return unwrap(res).shops;
 }

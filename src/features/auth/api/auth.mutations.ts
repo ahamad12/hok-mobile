@@ -48,7 +48,7 @@ async function signInWith(grant: AuthGrant): Promise<void> {
 // Screens render errors inline, so these skip the global error toast.
 const silent = { silent: true };
 
-const useGrantMutation = <T,>(fn: (input: T) => Promise<AuthGrant>) =>
+const useGrantMutation = <T>(fn: (input: T) => Promise<AuthGrant>) =>
   useMutation({
     mutationFn: async (input: T) => signInWith(await fn(input)),
     meta: silent,
@@ -106,8 +106,14 @@ export const useCreateInvitation = () => {
   });
 };
 
-export const useResendInvitation = () =>
-  useMutation({ mutationFn: resendInvitation });
+export const useResendInvitation = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: resendInvitation,
+    // Resend pushes the expiry out, so the list needs a refresh.
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.invitations() }),
+  });
+};
 
 export const useRevokeInvitation = () => {
   const qc = useQueryClient();

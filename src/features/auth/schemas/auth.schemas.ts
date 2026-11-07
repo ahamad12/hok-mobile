@@ -16,6 +16,14 @@ export const loginSchema = z.object({
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
 
+/** Optional username field: an empty input means "not set". */
+const optionalUsername = z
+  .string()
+  .trim()
+  .max(30, 'Username is too long')
+  .refine((v) => v === '' || v.length >= 3, 'Username is too short')
+  .optional();
+
 /** Public registration — owner-account fields only, never role/shopId. */
 export const registerSchema = z.object({
   email: z
@@ -36,12 +44,7 @@ export const registerSchema = z.object({
     .trim()
     .min(2, 'Display name is too short')
     .max(100, 'Display name is too long'),
-  username: z
-    .string()
-    .trim()
-    .min(3, 'Username is too short')
-    .max(30, 'Username is too long')
-    .optional(),
+  username: optionalUsername,
 });
 
 export type RegisterFormValues = z.infer<typeof registerSchema>;
@@ -107,7 +110,8 @@ export const createInvitationSchema = z
     if (value.role === 'MANAGER' && value.shopId) {
       ctx.addIssue({
         code: 'custom',
-        message: 'Managers manage the whole business and cannot be assigned to a shop.',
+        message:
+          'Managers manage the whole business and cannot be assigned to a shop.',
         path: ['shopId'],
       });
     }
@@ -137,6 +141,7 @@ export const acceptInvitationSchema = z.object({
     .trim()
     .min(2, 'Display name is too short')
     .max(100, 'Display name is too long'),
+  username: optionalUsername,
 });
 
 export type AcceptInvitationFormValues = z.infer<typeof acceptInvitationSchema>;

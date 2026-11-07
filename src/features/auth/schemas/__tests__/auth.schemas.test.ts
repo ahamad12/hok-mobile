@@ -104,8 +104,11 @@ describe('createInvitationSchema (invite-only MANAGER/STAFF)', () => {
 
   it('rejects MANAGER with a shop (system-wide role)', () => {
     expect(
-      createInvitationSchema.safeParse({ ...base, role: 'MANAGER', shopId: 's1' })
-        .success,
+      createInvitationSchema.safeParse({
+        ...base,
+        role: 'MANAGER',
+        shopId: 's1',
+      }).success,
     ).toBe(false);
   });
 

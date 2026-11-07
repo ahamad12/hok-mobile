@@ -42,3 +42,11 @@ export function invitableRoles(role: UserRole): ('MANAGER' | 'STAFF')[] {
   if (role === 'MANAGER') return ['STAFF'];
   return [];
 }
+
+const ROLE_LABELS: Record<UserRole, string> = {
+  OWNER: 'Owner',
+  MANAGER: 'Manager',
+  STAFF: 'Staff',
+};
+
+export const roleLabel = (role: UserRole): string => ROLE_LABELS[role] ?? role;

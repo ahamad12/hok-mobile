@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { useIsSignedIn } from '../hooks/useAuth';
-import { getInvitations, getMyShops, getProfile, getSessions } from './auth.api';
+import { useIsSignedIn, useUser } from '../hooks/useAuth';
+import { getInvitations, getProfile, getSessions } from './auth.api';
 import { authKeys } from './query-keys';
 
 // All gated on signed-in status so a signed-out boot never fires a doomed request.
@@ -21,17 +21,13 @@ export const useSessions = () =>
     enabled: useIsSignedIn(),
   });
 
-export const usePendingInvitations = () =>
-  useQuery({
+/** OWNER/MANAGER only — the server rejects STAFF. */
+export const usePendingInvitations = () => {
+  const signedIn = useIsSignedIn();
+  const role = useUser()?.role;
+  return useQuery({
     queryKey: authKeys.invitations(),
     queryFn: () => getInvitations('PENDING'),
-    enabled: useIsSignedIn(),
+    enabled: signedIn && (role === 'OWNER' || role === 'MANAGER'),
   });
-
-export const useMyShops = () =>
-  useQuery({
-    queryKey: authKeys.shops(),
-    queryFn: getMyShops,
-    enabled: useIsSignedIn(),
-    staleTime: 1000 * 60 * 5,
-  });
+};

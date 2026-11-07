@@ -19,7 +19,7 @@ export default function AuthLayout() {
   }
 
   if (status === 'signedIn') {
-    return <Redirect href='/(tabs)' />;
+    return <Redirect href='/shops' />;
   }
 
   return <Stack screenOptions={{ headerShown: false }} />;
