@@ -6,17 +6,23 @@ import { AppText } from '@/components/AppText';
 import { AppView } from '@/components/AppView';
 import { useColors } from '@/contexts/ColorContext';
 import { useAuthStatus, useUser } from '@/features/auth/hooks/useAuth';
+import { useMyShops } from '@/features/shops/api/shops.queries';
+import { entryHref } from '@/features/shops/utils/capabilities';
 
 export default function Index() {
   const status = useAuthStatus();
   const user = useUser();
+  const shops = useMyShops();
   const { colors } = useColors();
 
-  if (status === 'restoring') {
+  // Owners and managers need their shop count to pick the landing.
+  const waitingForShops = user?.role !== 'STAFF' && shops.isLoading;
+
+  if (status === 'restoring' || (status === 'signedIn' && waitingForShops)) {
     return (
       <AppView flex={1} align='center' justify='center' bg='default' gap={4}>
         <ActivityIndicator color={colors.brand.primary} />
-        <AppText color='secondary'>Restoring session…</AppText>
+        <AppText color='secondary'>Opening your hoks…</AppText>
       </AppView>
     );
   }
@@ -25,16 +31,10 @@ export default function Index() {
     return <Redirect href='/(auth)/login' />;
   }
 
-  // Staff live inside their one shop; owners and managers start at Shops.
-  if (user?.role === 'STAFF' && user.shopId) {
-    return (
-      <Redirect
-        href={{
-          pathname: '/shop/[shopId]/home',
-          params: { shopId: user.shopId },
-        }}
-      />
-    );
-  }
-  return <Redirect href='/shops' />;
+  const target = entryHref(
+    user,
+    (shops.data ?? []).map((s) => s.id),
+  );
+  if (target === 'shops') return <Redirect href='/shops' />;
+  return <Redirect href={{ pathname: '/shop/[shopId]', params: target }} />;
 }

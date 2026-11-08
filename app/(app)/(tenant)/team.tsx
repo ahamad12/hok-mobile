@@ -108,6 +108,9 @@ export default function TeamScreen() {
       leading={<Avatar name={m.displayName} />}
       title={m.id === user?.id ? `${m.displayName} (you)` : m.displayName}
       subtitle={memberSubtitle(m)}
+      onPress={() =>
+        router.push({ pathname: '/people/[userId]', params: { userId: m.id } })
+      }
       value={
         m.lastLoginAt ? formatRelativeTime(m.lastLoginAt) : 'Never signed in'
       }>

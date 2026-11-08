@@ -1,8 +1,10 @@
 import { useLocalSearchParams } from 'expo-router';
+import { useMemo } from 'react';
 
 import { useUser } from '@/features/auth/hooks/useAuth';
 
 import { useMyShops, useShop } from '../api/shops.queries';
+import { Capabilities, capabilitiesFor } from '../utils/capabilities';
 
 /** The `[shopId]` route segment of the shop area. */
 export function useShopId(): string {
@@ -34,6 +36,14 @@ export function useShopRole() {
     /** Staff have no tenant level: they live inside their one shop. */
     hasTenantLevel: manages,
   };
+}
+
+/** Shell, landing and every UI permission for the signed-in user. */
+export function useCapabilities(): Capabilities {
+  const user = useUser();
+  const mine = useMyShops();
+  const count = mine.data?.length ?? 0;
+  return useMemo(() => capabilitiesFor(user, count), [user, count]);
 }
 
 export function useCurrentShop() {

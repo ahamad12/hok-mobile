@@ -1,22 +1,18 @@
-import { useRouter } from 'expo-router';
 import React, { ReactNode, useState } from 'react';
+import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import {
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 
-import { AppIcon, IconName } from '@/components/AppIcon';
-import { AppText } from '@/components/AppText';
+import { IconName } from '@/components/AppIcon';
 import { useTabBarInset } from '@/components/FloatingTabBar';
 import { IconButton } from '@/components/IconButton';
+import { PageTitle } from '@/components/PageTitle';
 import { useColors } from '@/contexts/ColorContext';
 import { spacing } from '@/theme/Common';
 
-import { useCurrentShop, useShopRole } from '../hooks/useShopContext';
+import { ShopHeaderBar } from './ShopHeaderBar';
 
 type Action = { icon: IconName; label: string; onPress: () => void };
 
@@ -29,6 +25,11 @@ type Props = {
   onRefresh?: () => Promise<unknown> | void;
   /** Render your own list (FlatList) instead of the default ScrollView. */
   scroll?: boolean;
+  /**
+   * Pushed (not a tab root): "‹ Back" instead of "‹ All hoks", and no room
+   * kept for the floating tab bar, which is not shown on pushed screens.
+   */
+  pushed?: boolean;
   children: ReactNode;
 };
 
@@ -44,13 +45,13 @@ export function ShopTabScreen({
   toolbar,
   onRefresh,
   scroll = true,
+  pushed = false,
   children,
 }: Props) {
-  const router = useRouter();
   const { colors } = useColors();
-  const bottom = useTabBarInset();
-  const { shop } = useCurrentShop();
-  const { hasTenantLevel } = useShopRole();
+  const insets = useSafeAreaInsets();
+  const tabInset = useTabBarInset();
+  const bottom = pushed ? insets.bottom + spacing[8] : tabInset;
   const [refreshing, setRefreshing] = useState(false);
 
   const refresh = onRefresh
@@ -64,48 +65,11 @@ export function ShopTabScreen({
       }
     : undefined;
 
-  const goAllShops = () =>
-    router.canDismiss() ? router.dismissTo('/shops') : router.replace('/shops');
-
   const header = (
     <View style={styles.header}>
-      <View style={styles.topRow}>
-        {hasTenantLevel ? (
-          <Pressable
-            onPress={goAllShops}
-            hitSlop={10}
-            accessibilityRole='button'
-            accessibilityLabel='All shops'
-            style={({ pressed }) => [styles.back, pressed && styles.pressed]}>
-            <AppIcon
-              name='ChevronLeft'
-              size={18}
-              color={colors.text.secondary}
-            />
-            <AppText variant='label' color='secondary'>
-              All shops
-            </AppText>
-          </Pressable>
-        ) : null}
-        <AppText
-          variant='label'
-          color='tertiary'
-          numberOfLines={1}
-          style={styles.shopName}>
-          {shop?.name ?? ''}
-        </AppText>
-      </View>
+      <ShopHeaderBar pushed={pushed} />
       <View style={styles.titleRow}>
-        <View style={styles.flex}>
-          <AppText variant='h2' accessibilityRole='header' numberOfLines={1}>
-            {title}
-          </AppText>
-          {subtitle ? (
-            <AppText variant='bodySmall' color='secondary'>
-              {subtitle}
-            </AppText>
-          ) : null}
-        </View>
+        <PageTitle title={title} subtitle={subtitle} style={styles.flex} />
         {actions.map((a, i) => (
           <IconButton
             key={a.label}
@@ -152,18 +116,8 @@ export function ShopTabScreen({
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  pad: { paddingHorizontal: spacing[5] },
-  body: { paddingHorizontal: spacing[5], gap: spacing[6] },
-  header: { gap: spacing[3], paddingTop: spacing[2] },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing[3],
-    minHeight: 32,
-  },
-  back: { flexDirection: 'row', alignItems: 'center', gap: 2 },
-  pressed: { opacity: 0.6 },
-  shopName: { flexShrink: 1, textAlign: 'right' },
+  pad: { paddingHorizontal: spacing[6] },
+  body: { paddingHorizontal: spacing[6], gap: spacing[6] },
+  header: { gap: spacing[6], paddingTop: spacing[2] },
   titleRow: { flexDirection: 'row', alignItems: 'flex-end', gap: spacing[2] },
 });
