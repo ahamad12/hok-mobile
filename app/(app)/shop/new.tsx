@@ -2,15 +2,18 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Redirect, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Path, useForm, useWatch } from 'react-hook-form';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { AppButton } from '@/components/AppButton';
-import { ListItem, ListSection } from '@/components/ListItem';
-import { WizardStepIndicator } from '@/components/WizardStepIndicator';
+import { AppText } from '@/components/AppText';
+import { PageTitle } from '@/components/PageTitle';
+import { RuneTally } from '@/components/RuneTally';
 import { useServerErrors } from '@/features/auth/components';
 import { useUser } from '@/features/auth/hooks/useAuth';
 import { useCreateShop } from '@/features/shops/api/shops.mutations';
 import { FormScreen } from '@/features/shops/components/FormScreen';
+import { ShopCard } from '@/features/shops/components/ShopCard';
 import {
   SHOP_SERVER_FIELDS,
   ShopAddressFields,
@@ -24,12 +27,22 @@ import {
 } from '@/features/shops/schemas/shop.schemas';
 import { formatShopAddress } from '@/features/shops/utils/shopUtils';
 import { useToast } from '@/hooks/useToast';
+import { palette } from '@/theme/Colors';
 import { spacing } from '@/theme/Common';
 
 const STEPS = [
-  { label: 'The basics', hint: 'What should your team call this shop?' },
-  { label: 'Where is it?', hint: 'Used on receipts and for your staff.' },
-  { label: 'Review', hint: 'Check the details, then create the shop.' },
+  {
+    label: 'Name your hok',
+    hint: 'What your team calls this shop, and the number to reach it.',
+  },
+  {
+    label: 'Where it stands',
+    hint: 'The address your staff and suppliers know it by.',
+  },
+  {
+    label: 'Carve it in',
+    hint: 'This is how your hok will look. Check it, then open it.',
+  },
 ] as const;
 
 const STEP_FIELDS: Path<ShopFormValues>[][] = [
@@ -44,7 +57,29 @@ const STEP_FIELDS: Path<ShopFormValues>[][] = [
   [],
 ];
 
-/** Three-step "add a shop" wizard (owner only). */
+/** Required fields still empty on a step, for the "what's left" line. */
+function fieldsLeft(
+  step: number,
+  v: {
+    name?: string;
+    phone?: string;
+    address?: Partial<ShopFormValues['address']>;
+  },
+): number {
+  const filled = (s: string | undefined, min: number) =>
+    (s ?? '').trim().length >= min;
+  if (step === 0) {
+    return [filled(v.name, 2), filled(v.phone, 5)].filter((ok) => !ok).length;
+  }
+  if (step === 1) {
+    return [filled(v.address?.street, 1), filled(v.address?.city, 1)].filter(
+      (ok) => !ok,
+    ).length;
+  }
+  return 0;
+}
+
+/** Three-step "open a hok" wizard (owner only). */
 export default function NewShopScreen() {
   const router = useRouter();
   const user = useUser();
@@ -52,12 +87,11 @@ export default function NewShopScreen() {
   const create = useCreateShop();
   const [step, setStep] = useState(0);
 
-  const { control, handleSubmit, setError, trigger, getValues } =
-    useForm<ShopFormValues>({
-      resolver: zodResolver(shopFormSchema),
-      defaultValues: emptyShopForm,
-      mode: 'onTouched',
-    });
+  const { control, handleSubmit, setError, trigger } = useForm<ShopFormValues>({
+    resolver: zodResolver(shopFormSchema),
+    defaultValues: emptyShopForm,
+    mode: 'onTouched',
+  });
   const values = useWatch({ control });
   const { formError, setFormError, onError } = useServerErrors(
     setError,
@@ -76,9 +110,9 @@ export default function NewShopScreen() {
       setFormError(null);
       create.mutate(toShopInput(v), {
         onSuccess: (shop) => {
-          toast.success(`${shop.name} is ready`, 'Shop created');
+          toast.success(`${shop.name} is open`, 'Hok carved');
           router.replace({
-            pathname: '/shop/[shopId]/home',
+            pathname: '/shop/[shopId]',
             params: { shopId: shop.id },
           });
         },
@@ -92,91 +126,133 @@ export default function NewShopScreen() {
     () => setStep(0),
   );
 
+  // eslint-disable-next-line security/detect-object-injection
   const current = STEPS[step];
-  const address = formatShopAddress(getValues('address'));
+  const left = fieldsLeft(step, values);
+  const last = step === STEPS.length - 1;
+  const preview = {
+    name: values.name ?? '',
+    phone: values.phone ?? '',
+    logoUrl: null,
+    address: {
+      street: values.address?.street ?? '',
+      city: values.address?.city ?? '',
+      region: values.address?.region,
+    },
+  };
 
   return (
     <FormScreen
-      title='Add a shop'
+      title='Open a hok'
       dismiss='close'
+      showTitle={false}
+      headerRight={<RuneTally step={step + 1} total={STEPS.length} />}
       error={formError}
       footer={
-        <>
-          {step > 0 ? (
-            <AppButton
-              variant='tertiary'
-              onPress={() => setStep((s) => s - 1)}
-              iconLeft='ArrowLeft'
-              style={styles.back}
-              disabled={create.isPending}>
-              Back
-            </AppButton>
+        <View style={styles.footer}>
+          {!last ? (
+            <View style={styles.status}>
+              {left === 0 ? <View style={styles.readyMark} /> : null}
+              <AppText variant='bodySmall' color='secondary'>
+                {left === 0
+                  ? 'Ready'
+                  : `${left} ${left === 1 ? 'field' : 'fields'} left`}
+              </AppText>
+            </View>
           ) : null}
-          {step < STEPS.length - 1 ? (
+          <View style={styles.actions}>
+            {step > 0 ? (
+              <AppButton
+                variant='tertiary'
+                size='lg'
+                onPress={() => setStep((s) => s - 1)}
+                iconLeft='ArrowLeft'
+                rounded='none'
+                disabled={create.isPending}
+                accessibilityLabel='Back'
+              />
+            ) : null}
             <AppButton
-              onPress={next}
-              iconRight='ArrowRight'
-              style={styles.flex}>
-              Continue
-            </AppButton>
-          ) : (
-            <AppButton
-              onPress={submit}
+              variant='brand'
+              size='lg'
+              onPress={last ? submit : next}
               loading={create.isPending}
-              iconLeft='Check'
               style={styles.flex}>
-              Create shop
+              {last ? 'Open hok' : 'Continue'}
             </AppButton>
-          )}
-        </>
-      }>
-      <WizardStepIndicator
-        step={step + 1}
-        total={STEPS.length}
-        label={current.label}
-        hint={current.hint}
-      />
-
-      {step === 0 ? <ShopBasicsFields control={control} /> : null}
-      {step === 1 ? <ShopAddressFields control={control} /> : null}
-      {step === 2 ? (
-        <View style={styles.review}>
-          <ListSection
-            title='Shop'
-            action={
-              <AppButton variant='ghost' size='sm' onPress={() => setStep(0)}>
-                Edit
-              </AppButton>
-            }>
-            <ListItem
-              icon='Store'
-              iconTone='brand'
-              title={values.name ?? ''}
-              subtitle='Name'
-            />
-            <ListItem
-              icon='Phone'
-              title={values.phone ?? ''}
-              subtitle='Phone'
-            />
-          </ListSection>
-          <ListSection
-            title='Address'
-            action={
-              <AppButton variant='ghost' size='sm' onPress={() => setStep(1)}>
-                Edit
-              </AppButton>
-            }>
-            <ListItem icon='MapPin' title={address || '—'} subtitle='Address' />
-          </ListSection>
+          </View>
         </View>
-      ) : null}
+      }>
+      <Animated.View
+        key={step}
+        entering={FadeInDown.duration(260)}
+        style={styles.step}>
+        <PageTitle title={current.label} subtitle={current.hint} size='form' />
+
+        {step === 0 ? <ShopBasicsFields control={control} /> : null}
+        {step === 1 ? <ShopAddressFields control={control} /> : null}
+        {last ? (
+          <View style={styles.review}>
+            <ShopCard shop={preview} />
+            <SummaryRow
+              label='Name and phone'
+              value={[values.name, values.phone].filter(Boolean).join('  ·  ')}
+              onEdit={() => setStep(0)}
+            />
+            <SummaryRow
+              label='Address'
+              value={formatShopAddress(preview.address) || '—'}
+              onEdit={() => setStep(1)}
+            />
+          </View>
+        ) : null}
+      </Animated.View>
     </FormScreen>
+  );
+}
+
+function SummaryRow({
+  label,
+  value,
+  onEdit,
+}: {
+  label: string;
+  value: string;
+  onEdit: () => void;
+}) {
+  return (
+    <View style={styles.summary}>
+      <View style={styles.flex}>
+        <AppText variant='bodySmall' color='tertiary'>
+          {label}
+        </AppText>
+        <AppText variant='body'>{value}</AppText>
+      </View>
+      <Pressable
+        onPress={onEdit}
+        hitSlop={12}
+        accessibilityRole='button'
+        accessibilityLabel={`Edit ${label.toLowerCase()}`}>
+        <AppText variant='body' weight='semibold' color='link'>
+          Edit
+        </AppText>
+      </Pressable>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  back: { paddingHorizontal: spacing[5] },
+  step: { gap: spacing[8] },
   review: { gap: spacing[5] },
+  summary: { flexDirection: 'row', alignItems: 'center', gap: spacing[4] },
+  footer: { flex: 1, gap: spacing[3] },
+  status: { flexDirection: 'row', alignItems: 'center', gap: spacing[2] },
+  readyMark: {
+    width: 14,
+    height: 4,
+    backgroundColor: palette.hok.rust,
+    transform: [{ rotate: '-30deg' }],
+  },
+  actions: { flexDirection: 'row', gap: spacing[3] },
 });

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Animated, {
   Easing,
   useAnimatedProps,
@@ -92,7 +92,12 @@ const TIMED = CUTS.reduce<{ at: number; cuts: (Cut & { at: number })[] }>(
 /** Total carving time in ms; screens can time their own entrance from it. */
 export const CARVE_MS = TIMED.at;
 
-type WordmarkProps = { height?: number; color?: string };
+type WordmarkProps = {
+  height?: number;
+  color?: string;
+  /** Carve in on mount. False shows it already carved. */
+  animate?: boolean;
+};
 
 function CarvedStroke({
   cut,
@@ -135,8 +140,14 @@ function CarvedStroke({
  * HOK wordmark carved into place on mount (about 1.8 s), ending with a 1px
  * settle as the last cut lands. Shown fully carved when reduce motion is on.
  */
-export function HokWordmark({ height = 24, color = bone }: WordmarkProps) {
-  const still = useReducedMotion();
+export function HokWordmark({
+  height = 24,
+  color = bone,
+  animate = true,
+}: WordmarkProps) {
+  const reduced = useReducedMotion();
+  // Fixed for the life of the component, so strokes never re-run.
+  const [still] = useState(reduced || !animate);
   const settle = useSharedValue(0);
 
   useEffect(() => {

@@ -12,23 +12,37 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
+import { PageTitle } from '@/components/PageTitle';
 import { useColors } from '@/contexts/ColorContext';
-import { borderRadius, spacing } from '@/theme/Common';
+import { palette } from '@/theme/Colors';
+import { spacing } from '@/theme/Common';
 
 type Props = {
   title: string;
+  /** One line under the title. */
+  subtitle?: string;
   /** 'close' for modals, 'back' for pushed screens. */
   dismiss?: 'close' | 'back';
+  /** Right side of the top bar (e.g. a wizard's step tally). */
+  headerRight?: ReactNode;
+  /** Set false when the body draws its own heading (wizard steps). */
+  showTitle?: boolean;
   error?: string | null;
   /** Pinned to the bottom (primary actions). */
   footer?: ReactNode;
   children: ReactNode;
 };
 
-/** Full-screen form shell: top bar, scrolling body, pinned action bar. */
+/**
+ * Full-screen form shell: a square back/close button, the page title in the
+ * logo's style, a scrolling body, and a pinned action bar.
+ */
 export function FormScreen({
   title,
+  subtitle,
   dismiss = 'back',
+  headerRight,
+  showTitle = true,
   error,
   footer,
   children,
@@ -46,9 +60,13 @@ export function FormScreen({
           hitSlop={8}
           accessibilityRole='button'
           accessibilityLabel={dismiss === 'close' ? 'Close' : 'Back'}
-          style={[
+          style={({ pressed }) => [
             styles.iconBtn,
-            { backgroundColor: colors.background.surface },
+            {
+              backgroundColor: pressed
+                ? colors.background.subtle
+                : colors.background.surface,
+            },
           ]}>
           <AppIcon
             name={dismiss === 'close' ? 'X' : 'ChevronLeft'}
@@ -56,10 +74,7 @@ export function FormScreen({
             color={colors.icon.default}
           />
         </Pressable>
-        <AppText variant='h6' numberOfLines={1} style={styles.title}>
-          {title}
-        </AppText>
-        <View style={styles.iconBtn} />
+        {headerRight}
       </View>
       <KeyboardAvoidingView
         style={styles.flex}
@@ -67,6 +82,9 @@ export function FormScreen({
         <ScrollView
           contentContainerStyle={styles.body}
           keyboardShouldPersistTaps='handled'>
+          {showTitle ? (
+            <PageTitle title={title} subtitle={subtitle} size='form' />
+          ) : null}
           {error ? (
             <View
               accessibilityRole='alert'
@@ -74,7 +92,7 @@ export function FormScreen({
                 styles.error,
                 { backgroundColor: colors.background.errorSubtle },
               ]}>
-              <AppIcon name='CircleAlert' size={18} color={colors.icon.error} />
+              <AppIcon name='CircleAlert' size={18} color={palette.hok.rust} />
               <AppText variant='bodySmall' color='error' style={styles.flex}>
                 {error}
               </AppText>
@@ -101,34 +119,34 @@ const styles = StyleSheet.create({
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: spacing[4],
-    paddingVertical: spacing[2],
-    gap: spacing[3],
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing[6],
+    paddingTop: spacing[2],
+    paddingBottom: spacing[4],
   },
-  title: { flex: 1, textAlign: 'center' },
   iconBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: borderRadius.full,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },
   body: {
-    paddingHorizontal: spacing[5],
-    paddingTop: spacing[4],
+    paddingHorizontal: spacing[6],
+    paddingTop: spacing[2],
     paddingBottom: spacing[10],
     gap: spacing[6],
   },
   error: {
     flexDirection: 'row',
     gap: spacing[2],
-    padding: spacing[3],
-    borderRadius: borderRadius.lg,
+    padding: spacing[4],
+    borderLeftWidth: 4,
+    borderLeftColor: palette.hok.rust,
   },
   footer: {
     flexDirection: 'row',
     gap: spacing[3],
-    paddingHorizontal: spacing[5],
+    paddingHorizontal: spacing[6],
     paddingTop: spacing[3],
     paddingBottom: spacing[3],
   },

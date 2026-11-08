@@ -9,7 +9,7 @@ import {
   UpdateShopInput,
 } from './shops.types';
 
-/** OWNER only — the server rejects MANAGER/STAFF with 403. */
+/** OWNER/MANAGER: every active shop of the business. STAFF: their own shop. */
 export async function getMyShops(): Promise<Shop[]> {
   const res = await authedClient.get<ApiResponse<{ shops: Shop[] }>>(
     ENDPOINTS.SHOPS.LIST_MY,

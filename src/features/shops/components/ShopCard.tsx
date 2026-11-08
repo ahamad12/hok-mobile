@@ -1,85 +1,44 @@
-import React, { useState } from 'react';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import React from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
 
-import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { useColors } from '@/contexts/ColorContext';
-import { borderRadius, spacing } from '@/theme/Common';
-import { getInitials } from '@/utils/initials';
+import { palette } from '@/theme/Colors';
+import { spacing } from '@/theme/Common';
 
 import { Shop } from '../api/shops.types';
+import { CloseStatus } from '../utils/closeStatus';
 import { formatShopLocation } from '../utils/shopUtils';
+import { ShopCover } from './ShopCover';
+
+export { ShopCover } from './ShopCover';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const SPRING = { damping: 15, stiffness: 380, mass: 0.8 } as const;
 
-/** A shop's cover: its logo, or a large monogram on a tonal surface. */
-export function ShopCover({
-  shop,
-  height,
-  aspectRatio,
-  rounded = true,
-}: {
-  shop: Pick<Shop, 'name' | 'logoUrl'>;
-  height?: number;
-  aspectRatio?: number;
-  rounded?: boolean;
-}) {
-  const { colors } = useColors();
-  const [failed, setFailed] = useState(false);
-  const radius = rounded ? borderRadius['2xl'] : 0;
-  const sizeStyle = height ? { height } : { aspectRatio: aspectRatio ?? 4 / 3 };
+type CardShop = Pick<Shop, 'name' | 'logoUrl' | 'phone' | 'address'> & {
+  id?: string;
+};
 
-  if (shop.logoUrl && !failed) {
-    return (
-      <Image
-        source={{ uri: shop.logoUrl }}
-        onError={() => setFailed(true)}
-        style={[styles.cover, sizeStyle, { borderRadius: radius }]}
-        accessibilityIgnoresInvertColors
-      />
-    );
-  }
-
-  return (
-    <View
-      style={[
-        styles.cover,
-        styles.placeholder,
-        sizeStyle,
-        { borderRadius: radius, backgroundColor: colors.background.surface },
-      ]}>
-      <AppText
-        weight='extrabold'
-        customColor={colors.text.primary}
-        style={styles.monogram}
-        maxFontSizeMultiplier={1}>
-        {getInitials(shop.name)}
-      </AppText>
-      <View style={styles.storeMark}>
-        <AppIcon
-          name='Store'
-          size={16}
-          color={colors.icon.tertiary}
-          strokeWidth={1.8}
-        />
-      </View>
-    </View>
-  );
-}
-
-/** Airbnb-style listing card: big cover, then name and meta. No chrome. */
+/**
+ * A hok as a listing: its carved cover, then the name and where it stands.
+ * No chrome; the whole card is the press target. Without onPress it is a
+ * still preview (the create wizard's review step).
+ */
 export function ShopCard({
   shop,
   onPress,
+  status,
 }: {
-  shop: Shop;
-  onPress: () => void;
+  shop: CardShop;
+  onPress?: () => void;
+  /** The week's closes and a one-line status (Your hoks). */
+  status?: CloseStatus;
 }) {
   const { colors } = useColors();
   const scale = useSharedValue(1);
@@ -87,38 +46,72 @@ export function ShopCard({
     transform: [{ scale: scale.value }],
   }));
   const location = formatShopLocation(shop.address);
+  const meta = [location, shop.phone].filter(Boolean).join('  ·  ');
 
   return (
     <AnimatedPressable
       onPress={onPress}
-      onPressIn={() => (scale.value = withSpring(0.98, SPRING))}
+      disabled={!onPress}
+      onPressIn={() => (scale.value = withSpring(0.985, SPRING))}
       onPressOut={() => (scale.value = withSpring(1, SPRING))}
-      accessibilityRole='button'
+      accessibilityRole={onPress ? 'button' : undefined}
       accessibilityLabel={`${shop.name}${location ? `, ${location}` : ''}`}
       style={[styles.card, anim]}>
       <ShopCover shop={shop} />
       <View style={styles.body}>
-        <View style={styles.titleRow}>
-          <AppText variant='h6' numberOfLines={1} style={styles.flex}>
-            {shop.name}
-          </AppText>
-          <AppIcon name='ArrowUpRight' size={18} color={colors.icon.tertiary} />
-        </View>
-        <AppText variant='bodySmall' color='secondary' numberOfLines={1}>
-          {[location, shop.phone].filter(Boolean).join('  ·  ')}
+        <AppText variant='h5' numberOfLines={1}>
+          {shop.name || 'Your hok'}
         </AppText>
+        {meta ? (
+          <AppText variant='body' color='secondary' numberOfLines={1}>
+            {meta}
+          </AppText>
+        ) : null}
+        {status ? (
+          <View
+            style={styles.status}
+            accessibilityLabel={`${status.line}. ${status.week.filter((d) => d === 'closed').length} of the last 7 days closed.`}>
+            <View style={styles.week}>
+              {status.week.map((d, i) => (
+                <View
+                  key={i}
+                  style={[
+                    styles.mark,
+                    {
+                      backgroundColor:
+                        d === 'closed'
+                          ? colors.text.primary
+                          : d === 'draft'
+                            ? palette.hok.rust
+                            : colors.border.subtle,
+                    },
+                  ]}
+                />
+              ))}
+            </View>
+            <AppText
+              variant='bodySmall'
+              customColor={status.behind ? palette.hok.rust : undefined}
+              color={status.behind ? undefined : 'secondary'}
+              numberOfLines={1}>
+              {status.line}
+            </AppText>
+          </View>
+        ) : null}
       </View>
     </AnimatedPressable>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
   card: { marginBottom: spacing[8] },
-  cover: { width: '100%', overflow: 'hidden' },
-  placeholder: { alignItems: 'center', justifyContent: 'center' },
-  monogram: { fontSize: 56, lineHeight: 64, letterSpacing: -2 },
-  storeMark: { position: 'absolute', left: spacing[4], bottom: spacing[4] },
-  body: { paddingTop: spacing[3], gap: 2 },
-  titleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing[2] },
+  body: { paddingTop: spacing[4], gap: spacing[1] },
+  status: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[3],
+    marginTop: spacing[1],
+  },
+  week: { flexDirection: 'row', gap: 3 },
+  mark: { width: 8, height: 8 },
 });

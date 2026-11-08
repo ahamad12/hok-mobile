@@ -20,6 +20,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { CARVE_MS, HokWordmark } from '@/components/HokMark';
+import { PageTitle } from '@/components/PageTitle';
 import { useColors } from '@/contexts/ColorContext';
 import { palette } from '@/theme/Colors';
 import { spacing } from '@/theme/Common';
@@ -40,7 +41,13 @@ type Props = {
  * the carved HOK wordmark centred at the top. Everything below is
  * left-aligned; the rust main button is the only accent. Keyboard-safe.
  */
-export function AuthScreen({ title, subtitle, error, footer, children }: Props) {
+export function AuthScreen({
+  title,
+  subtitle,
+  error,
+  footer,
+  children,
+}: Props) {
   const insets = useSafeAreaInsets();
   const { colors } = useColors();
   const still = useReducedMotion();
@@ -81,16 +88,11 @@ export function AuthScreen({ title, subtitle, error, footer, children }: Props) 
           </View>
 
           <Animated.View style={enterStyle}>
-            <View style={styles.heading}>
-              <AppText variant='h1' accessibilityRole='header'>
-                {title}
-              </AppText>
-              {subtitle ? (
-                <AppText variant='body' color='secondary'>
-                  {subtitle}
-                </AppText>
-              ) : null}
-            </View>
+            <PageTitle
+              title={title}
+              subtitle={subtitle}
+              style={styles.heading}
+            />
 
             {error ? (
               <View
@@ -120,7 +122,7 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   scroll: { flexGrow: 1, paddingHorizontal: spacing[6] },
   mark: { alignItems: 'center', marginBottom: spacing[12] },
-  heading: { gap: spacing[2], marginBottom: spacing[8] },
+  heading: { marginBottom: spacing[8] },
   error: {
     flexDirection: 'row',
     alignItems: 'flex-start',

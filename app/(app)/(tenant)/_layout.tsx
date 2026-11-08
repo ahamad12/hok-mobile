@@ -29,7 +29,7 @@ export default function TenantTabsLayout() {
       return (
         <Redirect
           href={{
-            pathname: '/shop/[shopId]/home',
+            pathname: '/shop/[shopId]',
             params: { shopId: user.shopId },
           }}
         />
@@ -56,7 +56,7 @@ export default function TenantTabsLayout() {
       <Tabs.Screen
         name='shops'
         options={{
-          title: 'Shops',
+          title: 'Hoks',
           tabBarIcon: ({ color, size }) => (
             <AppIcon name='Store' color={String(color)} size={size} />
           ),
