@@ -1,9 +1,13 @@
+import { addEventListener as onNetInfo } from '@react-native-community/netinfo';
 import {
+  focusManager,
   MutationCache,
+  onlineManager,
   QueryCache,
   QueryClient,
 } from '@tanstack/react-query';
 import axios from 'axios';
+import { AppState } from 'react-native';
 
 import { captureError } from '@/config/SentrySetup';
 import { toErrorToast } from '@/constants/ApiErrors';
@@ -40,3 +44,15 @@ export const queryClient = new QueryClient({
     },
   }),
 });
+
+// React Native has no window focus: refetch stale queries when the app
+// comes back to the foreground, and pause/resume with the network.
+focusManager.setEventListener((setFocused) => {
+  const sub = AppState.addEventListener('change', (s) =>
+    setFocused(s === 'active'),
+  );
+  return () => sub.remove();
+});
+onlineManager.setEventListener((setOnline) =>
+  onNetInfo((state) => setOnline(!!state.isConnected)),
+);

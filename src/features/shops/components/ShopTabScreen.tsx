@@ -8,6 +8,7 @@ import {
 import { IconName } from '@/components/AppIcon';
 import { useTabBarInset } from '@/components/FloatingTabBar';
 import { IconButton } from '@/components/IconButton';
+import { OfflineBanner } from '@/components/OfflineBanner';
 import { PageTitle } from '@/components/PageTitle';
 import { useColors } from '@/contexts/ColorContext';
 import { spacing } from '@/theme/Common';
@@ -34,7 +35,7 @@ type Props = {
 };
 
 /**
- * Chrome for a tab inside one shop: "‹ All shops" (owners and managers),
+ * Chrome for a tab inside one shop: "‹ All hoks" (owners and managers),
  * the shop's name, a large title with actions, then content that clears
  * the floating tab bar.
  */
@@ -68,6 +69,7 @@ export function ShopTabScreen({
   const header = (
     <View style={styles.header}>
       <ShopHeaderBar pushed={pushed} />
+      <OfflineBanner />
       <View style={styles.titleRow}>
         <PageTitle title={title} subtitle={subtitle} style={styles.flex} />
         {actions.map((a, i) => (

@@ -30,6 +30,23 @@ export async function apiPatch<T>(url: string, body: object): Promise<T> {
   return unwrap(await authedClient.patch<ApiResponse<T>>(url, body));
 }
 
+/**
+ * Multipart upload of one file under the field name "file". React Native's
+ * FormData takes { uri, name, type } in place of a Blob.
+ */
+export async function apiUpload<T>(
+  url: string,
+  file: { uri: string; name: string; type: string },
+): Promise<T> {
+  const form = new FormData();
+  form.append('file', file as unknown as Blob);
+  return unwrap(
+    await authedClient.post<ApiResponse<T>>(url, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+  );
+}
+
 /** v4 UUID for idempotency keys (ticket clientMessageId). */
 export function uuidv4(): string {
   const c = globalThis.crypto as Crypto | undefined;
