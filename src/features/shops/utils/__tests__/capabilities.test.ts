@@ -29,9 +29,17 @@ describe('capabilitiesFor', () => {
     expect(capabilitiesFor(staff, 3).canSwitchShop).toBe(false);
   });
 
-  it('gives supervisors till, draft and profit, but not finalize', () => {
+  it('gives each role its bar', () => {
+    expect(capabilitiesFor(owner, 1).bar).toBe('oversight');
+    expect(capabilitiesFor(manager, 1).bar).toBe('oversight');
+    expect(capabilitiesFor(supervisor, 1).bar).toBe('supervisor');
+    expect(capabilitiesFor(staff, 1).bar).toBe('staff');
+  });
+
+  it('gives supervisors till and draft, but not finalize or profit', () => {
     const c = capabilitiesFor(supervisor, 1);
-    expect(c.canUseTill && c.canDraftDay && c.canViewProfit).toBe(true);
+    expect(c.canUseTill && c.canDraftDay && c.canViewLicenses).toBe(true);
+    expect(c.canViewProfit).toBe(false);
     expect(c.canFinalizeDay).toBe(false);
     expect(c.canAssignTickets).toBe(false);
     expect(c.canViewPayments).toBe(false);
@@ -40,6 +48,21 @@ describe('capabilitiesFor', () => {
   it('gives plain staff none of the supervisor powers', () => {
     const c = capabilitiesFor(staff, 1);
     expect(c.canUseTill || c.canDraftDay || c.canViewProfit).toBe(false);
+    expect(c.canViewLicenses).toBe(false);
+  });
+
+  it('opens gated pages by role', () => {
+    const open = (u: Parameters<typeof capabilitiesFor>[0]) =>
+      Object.entries(capabilitiesFor(u, 1).pages)
+        .filter(([, ok]) => ok)
+        .map(([p]) => p)
+        .sort();
+    expect(open(owner)).toEqual(
+      ['categories', 'edit', 'expenses', 'finance', 'licenses', 'records', 'staff', 'suppliers'],
+    );
+    expect(open(manager)).not.toContain('edit');
+    expect(open(supervisor)).toEqual(['licenses']);
+    expect(open(staff)).toEqual([]);
   });
 
   it('keeps shop settings and manager invites to the owner', () => {
@@ -53,6 +76,7 @@ describe('capabilitiesFor', () => {
     const c = capabilitiesFor(null, 0);
     expect(c.shell).toBe('shift');
     expect(Object.values(c).filter((v) => v === true)).toHaveLength(0);
+    expect(Object.values(c.pages).some(Boolean)).toBe(false);
   });
 });
 

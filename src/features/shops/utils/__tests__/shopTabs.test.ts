@@ -8,38 +8,50 @@ const bar = (role: 'OWNER' | 'MANAGER' | 'STAFF', isSupervisor = false) =>
 
 describe('shopTabsFor', () => {
   it('gives owners and managers the oversight bar, in order', () => {
-    const oversight = ['Today', 'Work', 'Team', 'Insights', 'Records'];
+    const oversight = ['Today', 'Work', 'Finance', 'Records', 'More'];
     expect(bar('OWNER')).toEqual(oversight);
     expect(bar('MANAGER')).toEqual(oversight);
   });
 
-  it('gives supervisors the shift bar with Till', () => {
+  it('gives supervisors Till and Deliveries, with Scratch in More', () => {
     expect(bar('STAFF', true)).toEqual([
       'Shift',
       'Till',
-      'Scratch',
       'Deliveries',
-      'Tasks',
+      'Work',
+      'More',
     ]);
   });
 
-  it('gives plain staff the shift bar without Till', () => {
-    expect(bar('STAFF')).toEqual(['Shift', 'Scratch', 'Deliveries', 'Tasks']);
+  it('gives plain staff Scratch and Deliveries, no Till', () => {
+    expect(bar('STAFF')).toEqual([
+      'Shift',
+      'Scratch',
+      'Deliveries',
+      'Work',
+      'More',
+    ]);
   });
 
-  it('never shows more than five tabs', () => {
-    for (const r of ['OWNER', 'MANAGER', 'STAFF'] as const) {
-      expect(bar(r, true).length).toBeLessThanOrEqual(5);
+  it('uses the same Work label and ends with More on every bar', () => {
+    for (const [r, s] of [
+      ['OWNER', false],
+      ['STAFF', true],
+      ['STAFF', false],
+    ] as const) {
+      const b = bar(r, s);
+      expect(b).toHaveLength(5);
+      expect(b).toContain('Work');
+      expect(b.at(-1)).toBe('More');
     }
   });
 
-  it('keeps every route registered, with old tabs hidden', () => {
+  it('keeps retired routes registered but hidden', () => {
     const all = shopTabsFor(
       capabilitiesFor({ role: 'OWNER', isSupervisor: false }, 1),
     );
-    expect(all.map((t) => t.name)).toEqual(
-      expect.arrayContaining(['home', 'money', 'more', 'shift', 'till']),
-    );
-    expect(all.find((t) => t.name === 'home')?.visible).toBe(false);
+    for (const name of ['home', 'money', 'insights', 'team']) {
+      expect(all.find((t) => t.name === name)?.visible).toBe(false);
+    }
   });
 });

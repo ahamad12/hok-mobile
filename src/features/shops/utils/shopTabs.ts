@@ -1,6 +1,6 @@
 import { IconName } from '@/components/AppIcon';
 
-import { Capabilities } from './capabilities';
+import { Bar, Capabilities } from './capabilities';
 
 export type ShopTab = {
   name: string;
@@ -9,50 +9,57 @@ export type ShopTab = {
   visible: boolean;
 };
 
+type Route = { name: string; title: string; icon: IconName; bars: Bar[] };
+
 /**
- * Every shop tab route, in one declaration order that yields both shells'
- * bar order as a subsequence:
- *   oversight → Today · Work · Team · Insights · Records
- *   shift     → Shift · [Till] · Scratch · Deliveries · Tasks
- * All routes are always registered (deep links keep working); only
- * visibility changes with the role. home/money/more are the old tabs, kept
+ * Every shop tab route, in one declaration order that yields each bar's
+ * order as a subsequence:
+ *   oversight  → Today · Work · Finance · Records · More
+ *   supervisor → Shift · Till · Deliveries · Work · More
+ *   staff      → Shift · Scratch · Deliveries · Work · More
+ * All routes stay registered so deep links keep working; only visibility
+ * changes with the role. team/insights/home/money are retired tabs, kept
  * hidden so existing links still resolve.
  */
+const ROUTES: Route[] = [
+  { name: 'today', title: 'Today', icon: 'House', bars: ['oversight'] },
+  {
+    name: 'shift',
+    title: 'Shift',
+    icon: 'ClipboardCheck',
+    bars: ['supervisor', 'staff'],
+  },
+  { name: 'till', title: 'Till', icon: 'Banknote', bars: ['supervisor'] },
+  { name: 'scratch', title: 'Scratch', icon: 'Ticket', bars: ['staff'] },
+  {
+    name: 'deliveries',
+    title: 'Deliveries',
+    icon: 'Truck',
+    bars: ['supervisor', 'staff'],
+  },
+  {
+    name: 'work',
+    title: 'Work',
+    icon: 'ListChecks',
+    bars: ['oversight', 'supervisor', 'staff'],
+  },
+  { name: 'finance', title: 'Finance', icon: 'ChartLine', bars: ['oversight'] },
+  { name: 'records', title: 'Records', icon: 'FolderOpen', bars: ['oversight'] },
+  {
+    name: 'more',
+    title: 'More',
+    icon: 'Ellipsis',
+    bars: ['oversight', 'supervisor', 'staff'],
+  },
+  { name: 'team', title: 'Team', icon: 'UsersRound', bars: [] },
+  { name: 'insights', title: 'Insights', icon: 'ChartLine', bars: [] },
+  { name: 'home', title: 'Home', icon: 'House', bars: [] },
+  { name: 'money', title: 'Money', icon: 'Wallet', bars: [] },
+];
+
 export function shopTabsFor(caps: Capabilities): ShopTab[] {
-  const oversight = caps.shell === 'oversight';
-  const shift = !oversight;
-  return [
-    { name: 'today', title: 'Today', icon: 'House', visible: oversight },
-    { name: 'shift', title: 'Shift', icon: 'ClipboardCheck', visible: shift },
-    {
-      name: 'till',
-      title: 'Till',
-      icon: 'Banknote',
-      visible: shift && caps.canUseTill,
-    },
-    { name: 'scratch', title: 'Scratch', icon: 'Ticket', visible: shift },
-    { name: 'deliveries', title: 'Deliveries', icon: 'Truck', visible: shift },
-    {
-      name: 'work',
-      title: oversight ? 'Work' : 'Tasks',
-      icon: 'ListChecks',
-      visible: true,
-    },
-    { name: 'team', title: 'Team', icon: 'UsersRound', visible: oversight },
-    {
-      name: 'insights',
-      title: 'Insights',
-      icon: 'ChartLine',
-      visible: oversight,
-    },
-    {
-      name: 'records',
-      title: 'Records',
-      icon: 'FolderOpen',
-      visible: oversight,
-    },
-    { name: 'home', title: 'Home', icon: 'House', visible: false },
-    { name: 'money', title: 'Money', icon: 'Wallet', visible: false },
-    { name: 'more', title: 'More', icon: 'Ellipsis', visible: false },
-  ];
+  return ROUTES.map(({ bars, ...t }) => ({
+    ...t,
+    visible: bars.includes(caps.bar),
+  }));
 }

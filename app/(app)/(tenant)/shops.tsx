@@ -1,21 +1,34 @@
 import { useRouter } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
-import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import {
+  FlatList,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AppButton } from '@/components/AppButton';
+import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { EmptyState } from '@/components/EmptyState';
+import { FilterChips } from '@/components/FilterChips';
 import { useTabBarInset } from '@/components/FloatingTabBar';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { SearchBar } from '@/components/SearchBar';
 import { SkeletonCard } from '@/components/Skeleton';
 import { useColors } from '@/contexts/ColorContext';
 import { useUser } from '@/features/auth/hooks/useAuth';
+import { useShopsDailySummaries } from '@/features/money/api/money.queries';
 import { useMyShops } from '@/features/shops/api/shops.queries';
 import { Shop } from '@/features/shops/api/shops.types';
-import { ShopCard } from '@/features/shops/components/ShopCard';
+import { ShopCard, ShopCover } from '@/features/shops/components/ShopCard';
+import { closeStatus } from '@/features/shops/utils/closeStatus';
 import { filterShops } from '@/features/shops/utils/shopUtils';
+import { palette } from '@/theme/Colors';
 import { spacing } from '@/theme/Common';
+import { today } from '@/utils/businessDate';
 
 function greeting(name?: string) {
   const h = new Date().getHours();
@@ -25,13 +38,10 @@ function greeting(name?: string) {
   return first ? `${part}, ${first}` : part;
 }
 
-// A business with exactly one shop lands inside it, once per app launch;
-// "All shops" brings the owner back here.
-let autoOpened = false;
-
 /**
- * All Shops (owners and managers; staff never reach the business level).
- * `GET /shops/my` returns every active shop of the business.
+ * Your hoks (owners and managers; staff never reach the business level).
+ * `GET /shops/my` returns every active shop of the business. One-shop
+ * businesses open straight into their shop from app/index.tsx.
  */
 export default function ShopsScreen() {
   const router = useRouter();
@@ -43,47 +53,72 @@ export default function ShopsScreen() {
   const list = useMyShops();
   const data: Shop[] = useMemo(() => list.data ?? [], [list.data]);
 
+  // Each hok's close record, derived from its recent daily summaries.
+  const summaries = useShopsDailySummaries(data.map((s) => s.id));
+  const day = today();
+  const statusById = new Map(
+    data.map((s, i) => [
+      s.id,
+      // eslint-disable-next-line security/detect-object-injection
+      summaries[i]?.data
+        ? // eslint-disable-next-line security/detect-object-injection
+          closeStatus(summaries[i].data!.summaries, day)
+        : undefined,
+    ]),
+  );
+  const behindCount = [...statusById.values()].filter((s) => s?.behind).length;
+
   const [query, setQuery] = useState('');
-  const shops = useMemo(() => filterShops(data, query), [data, query]);
+  const [show, setShow] = useState<'all' | 'behind'>('all');
+  const shops = useMemo(
+    () =>
+      filterShops(data, query).filter(
+        (s) => show === 'all' || statusById.get(s.id)?.behind,
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [data, query, show, behindCount],
+  );
 
   const openShop = (s: Shop) =>
-    router.push({ pathname: '/shop/[shopId]/home', params: { shopId: s.id } });
+    router.push({ pathname: '/shop/[shopId]', params: { shopId: s.id } });
   const addShop = () => router.push('/shop/new');
   const loading = list.isLoading;
 
-  useEffect(() => {
-    if (!autoOpened && list.isSuccess && data.length === 1) {
-      autoOpened = true;
-      openShop(data[0]);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [list.isSuccess, data]);
+  const countLabel = (n: number) => `${n} ${n === 1 ? 'hok' : 'hoks'}`;
+  const subtitle =
+    data.length > 0
+      ? `${greeting(user?.displayName)} · ${
+          query
+            ? `${shops.length} of ${countLabel(data.length)}`
+            : countLabel(data.length)
+        }${behindCount ? ` · ${behindCount} not closed` : ''}`
+      : greeting(user?.displayName);
 
   const header = (
     <View style={styles.headerBlock}>
-      <ScreenHeader
-        eyebrow={greeting(user?.displayName)}
-        title='Shops'
-        actionIcon={isOwner ? 'Plus' : undefined}
-        actionLabel='Add a shop'
-        onAction={isOwner ? addShop : undefined}
-      />
+      <ScreenHeader title='Your hoks' subtitle={subtitle} />
       {data.length > 1 ? (
         <SearchBar
           value={query}
           onChangeText={setQuery}
-          placeholder='Search shops, cities, phone'
+          placeholder='Search by name, city or phone'
         />
       ) : null}
-      {data.length > 0 ? (
-        <AppText variant='label' color='tertiary' style={styles.count}>
-          {query
-            ? `${shops.length} of ${data.length} shops`
-            : `${data.length} ${data.length === 1 ? 'shop' : 'shops'}`}
-        </AppText>
+      {data.length > 1 && behindCount > 0 ? (
+        <FilterChips<'all' | 'behind'>
+          value={show}
+          onChange={setShow}
+          options={[
+            { value: 'all', label: 'All' },
+            { value: 'behind', label: `Not closed · ${behindCount}` },
+          ]}
+        />
       ) : null}
     </View>
   );
+
+  // Owners with shops get the floating add button; the empty state has its own.
+  const showAdd = isOwner && data.length > 0;
 
   const empty = loading ? (
     <>
@@ -100,25 +135,30 @@ export default function ShopsScreen() {
     />
   ) : data.length === 0 ? (
     isOwner ? (
-      <EmptyState
-        icon='Store'
-        title='Add your first shop'
-        body='Shops are where your team works. Add one to start inviting staff.'
-        actionLabel='Add a shop'
-        actionIcon='Plus'
-        onAction={addShop}
-      />
+      <View style={styles.firstHok}>
+        <ShopCover shop={{ name: 'H', logoUrl: null, id: user?.id }} />
+        <View style={styles.firstText}>
+          <AppText variant='h5'>Carve your first hok</AppText>
+          <AppText variant='body' color='secondary'>
+            A hok is one of your shops. Add it, then invite the people who run
+            it.
+          </AppText>
+        </View>
+        <AppButton variant='brand' size='lg' fullWidth onPress={addShop}>
+          Add your first hok
+        </AppButton>
+      </View>
     ) : (
       <EmptyState
         icon='Store'
-        title='No shops yet'
+        title='No hoks yet'
         body='Your owner has not added any shops yet.'
       />
     )
   ) : (
     <EmptyState
       icon='SearchX'
-      title='No matching shops'
+      title='Nothing matches'
       body='Try a different name, city or phone number.'
     />
   );
@@ -131,11 +171,19 @@ export default function ShopsScreen() {
         data={shops}
         keyExtractor={(s) => s.id}
         renderItem={({ item }) => (
-          <ShopCard shop={item} onPress={() => openShop(item)} />
+          <ShopCard
+            shop={item}
+            status={statusById.get(item.id)}
+            onPress={() => openShop(item)}
+          />
         )}
         ListHeaderComponent={header}
         ListEmptyComponent={empty}
-        contentContainerStyle={[styles.pad, { paddingBottom: bottom }]}
+        contentContainerStyle={[
+          styles.pad,
+          // Keep the last card clear of the floating add button.
+          { paddingBottom: bottom + (showAdd ? FAB + spacing[4] : 0) },
+        ]}
         keyboardShouldPersistTaps='handled'
         keyboardDismissMode='on-drag'
         refreshControl={
@@ -146,13 +194,47 @@ export default function ShopsScreen() {
           />
         }
       />
+      {showAdd ? (
+        <Pressable
+          onPress={addShop}
+          accessibilityRole='button'
+          accessibilityLabel='Open another hok'
+          style={({ pressed }) => [
+            styles.fab,
+            {
+              bottom,
+              backgroundColor: pressed ? RUST_PRESSED : palette.hok.rust,
+            },
+          ]}>
+          <AppIcon name='Plus' size={26} color='#FFFFFF' strokeWidth={2.4} />
+        </Pressable>
+      ) : null}
     </SafeAreaView>
   );
 }
 
+const FAB = 56;
+const RUST_PRESSED = '#A33A16';
+
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  pad: { paddingHorizontal: spacing[5] },
-  headerBlock: { gap: spacing[4], marginBottom: spacing[5] },
-  count: { paddingHorizontal: spacing[1] },
+  pad: { paddingHorizontal: spacing[6] },
+  headerBlock: { gap: spacing[5], marginBottom: spacing[8] },
+  firstHok: { gap: spacing[5] },
+  firstText: { gap: spacing[2] },
+  // Square rust button, the one accent on the screen; it floats above the
+  // tab bar, so it is the one thing here with a shadow.
+  fab: {
+    position: 'absolute',
+    right: spacing[6],
+    width: FAB,
+    height: FAB,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 6,
+  },
 });

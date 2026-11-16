@@ -18,8 +18,9 @@ export default function AuthLayout() {
     );
   }
 
+  // The root index picks the landing (one-shop owners go into their shop).
   if (status === 'signedIn') {
-    return <Redirect href='/shops' />;
+    return <Redirect href='/' />;
   }
 
   return <Stack screenOptions={{ headerShown: false }} />;

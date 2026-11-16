@@ -1,5 +1,5 @@
 import { Redirect, Tabs } from 'expo-router';
-import React, { useMemo } from 'react';
+import React from 'react';
 
 import { AppIcon } from '@/components/AppIcon';
 import { EmptyState } from '@/components/EmptyState';
@@ -7,22 +7,16 @@ import { FloatingTabBar } from '@/components/FloatingTabBar';
 import { ThemedView } from '@/components/ThemedView';
 import { useLogout } from '@/features/auth/api/auth.mutations';
 import { useUser } from '@/features/auth/hooks/useAuth';
-import { buildSampleInbox, countItems } from '@/features/inbox/inbox.mock';
-import { useMyShops } from '@/features/shops/api/shops.queries';
 
 /**
- * Business-level tabs for owners and managers. Staff have no business
- * level: they go straight to their shop.
+ * Business-level tabs for owners and managers: the first screen when they
+ * have 0 or 2+ shops, and reachable from every shop's More tab. Staff have
+ * no business level: they go straight to their shop. The Inbox is hidden
+ * until the API has a cross-shop attention endpoint (it was sample data).
  */
 export default function TenantTabsLayout() {
   const user = useUser();
   const logout = useLogout();
-  const shops = useMyShops();
-  // Attention count, not "unread": there is no read state server-side.
-  const attention = useMemo(
-    () => countItems(buildSampleInbox(shops.data ?? [], false)),
-    [shops.data],
-  );
 
   if (user?.role === 'STAFF') {
     if (user.shopId) {
@@ -62,16 +56,7 @@ export default function TenantTabsLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name='inbox'
-        options={{
-          title: 'Inbox',
-          tabBarBadge: attention > 0 ? attention : undefined,
-          tabBarIcon: ({ color, size }) => (
-            <AppIcon name='Inbox' color={String(color)} size={size} />
-          ),
-        }}
-      />
+      <Tabs.Screen name='inbox' options={{ title: 'Inbox', href: null }} />
       <Tabs.Screen
         name='team'
         options={{

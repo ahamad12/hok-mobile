@@ -8,9 +8,10 @@ import { useAuthStatus } from '@/features/auth/hooks/useAuth';
 
 /**
  * Signed-in area, two levels deep:
- * - `(tenant)`: the business — Shops, Inbox, Team, Account (owners, managers)
- * - `shop/[shopId]`: one shop — Home, Scratch, Work, Money, More (everyone;
- *   staff live only here)
+ * - `(tenant)`: the business — Hoks, Team, Account (owners, managers; also
+ *   reachable from every shop's More tab)
+ * - `shop/[shopId]`: one shop, five tabs chosen by role (everyone; staff
+ *   live only here)
  * Account screens and modals are pushed on top of either.
  */
 export default function AppLayout() {
