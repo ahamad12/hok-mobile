@@ -39,3 +39,10 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+# graphify (regenerate with `graphify update .`)
+graphify-out/
+
+# Claude Code local settings and Obsidian app config
+.claude/settings.local.json
+.obsidian/
