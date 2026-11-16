@@ -57,6 +57,8 @@ export const ENDPOINTS = {
     VOID_PAYMENT: (paymentId: string) =>
       `deliveries/payments/${paymentId}/void`,
     VOID: (id: string) => `deliveries/${id}/void`,
+    RECEIVE: (id: string) => `deliveries/${id}/receive`,
+    BILL: (id: string) => `deliveries/${id}/bill`,
   },
   DAILY_SUMMARIES: {
     CREATE: 'daily-summaries',

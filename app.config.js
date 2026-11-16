@@ -70,7 +70,19 @@ module.exports = ({ config }) => {
     web: {
       favicon: './assets/favicon.png',
     },
-    plugins: ['expo-router', '@sentry/react-native', 'expo-localization', 'expo-status-bar'],
+    plugins: [
+      'expo-router',
+      '@sentry/react-native',
+      'expo-localization',
+      'expo-status-bar',
+      [
+        'expo-image-picker',
+        {
+          photosPermission: 'Allow TAPT to attach supplier bills from your photos.',
+          cameraPermission: 'Allow TAPT to photograph supplier bills.',
+        },
+      ],
+    ],
     extra: {
       eas: {
         projectId: '',
